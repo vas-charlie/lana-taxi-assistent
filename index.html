@@ -1,3 +1,25 @@
 <!doctype html>
-<html lang="hr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071a2b"><link rel="manifest" href="/manifest.json"><title>VAŠ CHARLIE — LANA</title><link rel="stylesheet" href="/style.css"></head>
-<body><main class="app"><section class="hero"><div class="orb">L</div><div><h1>VAŠ CHARLIE</h1><p>LANA · TAXI ASSISTENT</p></div></section><section class="card"><h2>Bok, Charlie. 💙</h2><p>Lana je spremna za novu smjenu.</p><button id="start">ZAPOČNI SMJENU</button></section><section class="grid"><button>📍 Lokacija</button><button>🗣️ Jezici</button><button>🚕 Cijena</button><button>📊 Statistika</button></section><footer>DA NIJE VAS, NE BI BILO NI ME-NЕ!!</footer></main><script src="/app.js"></script></body></html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071a2b"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE, TAKSI OSIJEK i TAXI OSIJEK.">
+<link rel="manifest" href="/manifest.json"><link rel="stylesheet" href="/style.css">
+<title>LANA | VAŠ CHARLIE | TAXI OSIJEK</title>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="logo">L</div><div><b>VAŠ CHARLIE</b><span>LANA · TAXI ASSISTENT</span></div></div><div id="clock">--:--</div></header>
+<section class="status"><div><span class="dot" id="statusDot"></span><div><strong id="statusTitle">Lana je spremna</strong><small id="statusSub">Nema aktivne smjene</small></div></div><button class="voice" id="voiceBtn">🎙️</button></section>
+<section class="hero"><div><p class="eyebrow">TAKSI OSIJEK · TAXI OSIJEK</p><h1>Bok, Charlie. 💙</h1><p class="lead">Tvoja taxi pomoćnica. Jedan ekran, jasne radnje, bez lutanja po izbornicima.</p></div><button class="primary" id="shiftBtn">ZAPOČNI SMJENU</button></section>
+<section class="quick">
+<button data-open="fare">💶<span>Cijena</span></button><button data-open="location">📍<span>Lokacija</span></button><button data-open="languages">🗣️<span>Jezici</span></button><button data-open="stats">📊<span>Statistika</span></button>
+</section>
+<section class="panel"><div class="panelHead"><h2>Danas</h2><span id="todayLabel"></span></div><div class="numbers"><div><b id="km">0.0</b><span>km</span></div><div><b id="income">0.00 €</b><span>prihod</span></div><div><b id="rides">0</b><span>vožnje</span></div><div><b id="hours">0:00</b><span>trajanje</span></div></div></section>
+<section class="tools">
+<button data-open="fuel">⛽ Gorivo & km</button><button data-open="income">🧾 Uber · Bolt · Taxi</button><button data-open="passenger">🌍 Putnik</button><button data-open="more">⚙️ Više</button>
+</section>
+<footer>DA NIJE VAS, NE BI BILO NI ME−NE!!</footer>
+</div>
+<div class="modal" id="modal"><div class="sheet"><button class="close" id="close">×</button><div id="sheetContent"></div></div></div>
+<script src="/app.js"></script>
+</body></html>
