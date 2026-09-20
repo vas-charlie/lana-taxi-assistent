@@ -1,0 +1,1 @@
+const b=document.getElementById('start');b.onclick=()=>{b.textContent='SMJENA JE ZAPOČELA ✓';b.disabled=true};if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
