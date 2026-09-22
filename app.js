@@ -36,4 +36,4 @@ if(e.target.id==='reset'&&confirm('Obrisati današnje podatke?')){Object.assign(
 });
 function speak(text,lang){if(!('speechSynthesis'in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=lang||'hr-HR';speechSynthesis.cancel();speechSynthesis.speak(u)}
 $('#voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){open('Glasovne naredbe','<p>Ovaj preglednik ne daje Lani pristup prepoznavanju glasa. Tekstualne naredbe i dalje rade.</p>');return}const r=new SR();r.lang='hr-HR';r.onresult=e=>{const t=e.results[0][0].transcript.toLowerCase();if(t.includes('započni')||t.includes('započni smjenu'))$('#shiftBtn').click();else if(t.includes('cijena'))open('Kalkulator cijene','<p>Reci ili upiši udaljenost i cijenu po kilometru.</p>');else open('Lana je čula','<p>„'+e.results[0][0].transcript+'“</p>')};r.start()};
-if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v9.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
