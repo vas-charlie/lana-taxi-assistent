@@ -2,3 +2,29 @@
 .shiftActions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.shiftActions .primary:only-child{grid-column:1/-1}.secondary{border:1px solid #2a526a;border-radius:15px;background:#102a3b;color:#fff;font-weight:900;font-size:14px}.secondary.paused{background:#7a5a20;border-color:#a27a2a}.tools button:first-child{grid-column:1/-1}.tools{grid-template-columns:1fr 1fr}
 .lanaSpace{display:flex;align-items:center;gap:13px;background:linear-gradient(145deg,#0b2031,#081621);border:1px solid #1b455d;border-radius:20px;padding:14px 16px;margin-bottom:14px}.lanaOrb{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:#123b55;border:1px solid #2d7097;font-size:22px;font-weight:900}.lanaSpace strong,.lanaSpace span,.lanaSpace small{display:block}.lanaSpace strong{letter-spacing:.14em;color:#7dc4eb;font-size:12px}.lanaSpace span{font-size:12px;font-weight:800;margin-top:2px}.lanaSpace small{font-size:10px;color:#718e9f;margin-top:3px}.chip{cursor:pointer}.quick button,.tools button,.voice,.primary,.secondary{cursor:pointer}
 .lanaSpace{display:grid;grid-template-columns:155px 1fr;align-items:center;gap:18px;min-height:190px;overflow:hidden}.lanaPortrait{height:190px;display:flex;align-items:flex-end;justify-content:center}.lanaPortrait svg{height:190px;width:155px;filter:drop-shadow(0 12px 22px #0008)}.lanaCopy strong,.lanaCopy span,.lanaCopy small{display:block}.lanaCopy strong{letter-spacing:.14em;color:#7dc4eb;font-size:13px}.lanaCopy span{font-size:14px;font-weight:900;margin-top:5px}.lanaCopy small{font-size:11px;color:#7898aa;margin-top:5px;line-height:1.35}@media(max-width:430px){.lanaSpace{grid-template-columns:118px 1fr;gap:10px;min-height:155px;padding:10px 12px}.lanaPortrait{height:155px}.lanaPortrait svg{width:118px;height:155px}.lanaCopy strong{font-size:11px}.lanaCopy span{font-size:12px}.lanaCopy small{font-size:9px}}
+/* LANA animated communication space */
+.lanaSpace{position:relative;display:grid;grid-template-columns:150px 1fr;grid-template-rows:42px 1fr;gap:6px 12px;min-height:235px;padding:12px 14px;overflow:hidden;background:radial-gradient(circle at 72% 45%,#12354a 0,#091b29 42%,#071521 100%);border:1px solid #1d5069;border-radius:22px;margin-bottom:14px;isolation:isolate}
+.lanaPortrait{grid-column:1;grid-row:1 / 3;height:210px;display:flex;align-items:flex-end;justify-content:center;z-index:3;filter:drop-shadow(0 12px 22px #0008)}
+.lanaPortrait svg{width:150px;height:210px}
+.lanaSpeech{position:relative;grid-column:1;grid-row:1;z-index:5;align-self:start;justify-self:center;transform:translate(28px,-5px);background:#eef7ff;color:#102235;border-radius:13px 13px 13px 4px;padding:7px 10px;font-size:10px;font-weight:800;line-height:1.2;box-shadow:0 7px 20px #0005;max-width:130px}
+.lanaSpeech:after{content:"";position:absolute;left:10px;bottom:-7px;border:7px solid transparent;border-top-color:#eef7ff;border-left:0}
+.lanaMessageSpace{grid-column:2;grid-row:1 / 3;position:relative;min-width:0;min-height:205px;overflow:hidden;border-left:1px solid #1a4358;background:linear-gradient(90deg,#0a1d2a55,transparent 24%);mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%)}
+.messageTrack{position:absolute;inset:0;overflow:hidden}
+.lanaMsg{position:absolute;left:var(--x);top:var(--y);font-size:var(--size);font-weight:var(--weight);letter-spacing:var(--spacing);white-space:nowrap;color:var(--msgColor,#e9f7ff);text-shadow:0 3px 16px #000b;opacity:0;transform:translate3d(var(--fromX),var(--fromY),0) rotate(var(--rot));animation:lanaMessageLife var(--dur) cubic-bezier(.2,.75,.25,1) forwards;pointer-events:none}
+.lanaMsg.brandMsg{font-weight:950;color:#77c7ef}
+.lanaMsg.sloganMsg{font-size:clamp(12px,2.7vw,20px);font-weight:950;color:#f3fbff;letter-spacing:.02em}
+.lanaMsg.thanksMsg{color:#b9d8e8}
+@keyframes lanaMessageLife{
+  0%{opacity:0;transform:translate3d(var(--fromX),var(--fromY),0) rotate(var(--rot)) scale(.72)}
+  12%{opacity:1}
+  58%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  78%{opacity:.92;transform:translate3d(var(--holdX),var(--holdY),0) rotate(var(--holdRot)) scale(1)}
+  100%{opacity:0;transform:translate3d(var(--toX),var(--toY),0) rotate(var(--toRot)) scale(.78)}
+}
+@media(max-width:520px){
+ .lanaSpace{grid-template-columns:108px 1fr;grid-template-rows:36px 1fr;min-height:195px;padding:9px 9px;gap:4px 7px}
+ .lanaPortrait{height:178px}.lanaPortrait svg{width:108px;height:178px}
+ .lanaSpeech{font-size:9px;max-width:100px;padding:6px 7px;transform:translate(15px,-3px)}
+ .lanaMessageSpace{min-height:175px}
+ .lanaMsg{font-size:var(--mobileSize,var(--size))}
+}
