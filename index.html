@@ -3,13 +3,43 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071a2b"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE, TAKSI OSIJEK i TAXI OSIJEK.">
-<link rel="manifest" href="/manifest.json?v=9"><link rel="stylesheet" href="/style.css?v=9">
+<link rel="manifest" href="/manifest.json?v=11"><link rel="stylesheet" href="/style.css?v=11">
 <title>LANA | VAŠ CHARLIE | TAXI OSIJEK</title>
 </head>
 <body>
 <div class="app">
 <header class="top"><div class="brand"><div class="logo">L</div><div><b>VAŠ CHARLIE</b><span>LANA · TAXI ASSISTENT</span></div></div><div id="clock">--:--</div></header>
-<section class="lanaSpace"><div class="lanaOrb">L</div><div><strong>VAŠ CHARLIE</strong><span>HVALA NA UKAZANOM POVJERENJU</span><small>DA NIJE VAS, NE BI BILO NI ME−NE!!</small></div></section>
+
+<section class="lanaSpace">
+  <div class="lanaPortrait" aria-label="Lana">
+    <svg viewBox="0 0 180 220" role="img" aria-hidden="true">
+      <defs>
+        <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#273b57"/><stop offset="1" stop-color="#101d31"/></linearGradient>
+        <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a668b"/><stop offset="1" stop-color="#12344e"/></linearGradient>
+      </defs>
+      <path d="M42 86C27 35 54 9 91 11c39 2 61 30 48 78l-10 34H49z" fill="url(#hair)"/>
+      <ellipse cx="91" cy="80" rx="42" ry="49" fill="#e9b59d"/>
+      <path d="M51 68c5-37 27-48 49-47 23 1 39 15 43 43-13-8-25-20-32-31-15 19-35 31-60 35z" fill="url(#hair)"/>
+      <path d="M57 76h27v15H57zM98 76h27v15H98z" fill="none" stroke="#18283b" stroke-width="5" rx="6"/>
+      <path d="M84 83h14" stroke="#18283b" stroke-width="4"/>
+      <circle cx="70" cy="84" r="3" fill="#18283b"/><circle cx="111" cy="84" r="3" fill="#18283b"/>
+      <path d="M79 104c7 5 15 5 23 0" fill="none" stroke="#a34e56" stroke-width="3" stroke-linecap="round"/>
+      <path d="M39 136c18-18 35-24 52-24s35 6 53 24l17 72H22z" fill="url(#coat)"/>
+      <path d="M78 123l13 21 14-21" fill="#eef7ff"/>
+      <path d="M91 145v62" stroke="#b8d8e8" stroke-width="2" opacity=".45"/>
+      <path d="M132 151l24 19" stroke="#e9b59d" stroke-width="13" stroke-linecap="round"/>
+      <path d="M154 169l15 9" stroke="#f0c5ad" stroke-width="8" stroke-linecap="round"/>
+      <path d="M162 174l9-18" stroke="#d7edf8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M166 156l5-1" stroke="#d7edf8" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="lanaCopy">
+    <strong>VAŠ CHARLIE</strong>
+    <span>HVALA NA UKAZANOM POVJERENJU</span>
+    <small>DA NIJE VAS, NE BI BILO NI ME−NE!!</small>
+  </div>
+</section>
+
 <section class="status"><div><span class="dot" id="statusDot"></span><div><strong id="statusTitle">Lana je spremna</strong><small id="statusSub">Nema aktivne smjene</small></div></div><button class="voice" id="voiceBtn">🎙️</button></section>
 <section class="hero"><div><p class="eyebrow">TAKSI OSIJEK · TAXI OSIJEK</p><h1>Bok, Charlie. 💙</h1><p class="lead">Tvoja taxi pomoćnica. Jedan ekran, jasne radnje, bez lutanja po izbornicima.</p></div><div class="shiftActions"><button class="primary" id="shiftBtn">ZAPOČNI SMJENU</button><button class="secondary" id="pauseBtn" hidden>PAUZA</button></div></section>
 <section class="quick">
@@ -22,10 +52,10 @@
 <footer>DA NIJE VAS, NE BI BILO NI ME−NE!!</footer>
 </div>
 <div class="modal" id="modal"><div class="sheet"><button class="close" id="close">×</button><div id="sheetContent"></div></div></div>
-<script src="/app.js?v=9"></script>
+<script src="/app.js?v=11"></script>
 <script>
 if('serviceWorker'in navigator){
- navigator.serviceWorker.register('/sw-v9.js?v=9',{updateViaCache:'none'})
+ navigator.serviceWorker.register('/sw-v10.js?v=11',{updateViaCache:'none'})
  .then(r=>r.update()).catch(()=>{});
 }
 </script>
