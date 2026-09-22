@@ -25,7 +25,7 @@
 <script src="/app.js?v=9"></script>
 <script>
 if('serviceWorker'in navigator){
- navigator.serviceWorker.register('/sw.js?v=9',{updateViaCache:'none'})
+ navigator.serviceWorker.register('/sw-v9.js?v=9',{updateViaCache:'none'})
  .then(r=>r.update()).catch(()=>{});
 }
 </script>
