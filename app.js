@@ -42,52 +42,35 @@ if(e.target.id==='saveIncome'){const u=+$('#uber').value||0,b=+$('#bolt').value|
 if(e.target.id==='reset'&&confirm('Obrisati današnje podatke?')){Object.assign(data,{active:false,paused:false,started:null,pausedAt:null,pauseTotal:0,km:0,rides:0,income:0,fuel:0,uber:0,bolt:0,taxi:0,tips:0});save();close()}
 });
 
-// Animated communication space, inspired by the original Lana layout.
-const LANA_MESSAGES=[
- {text:'VAŠ CHARLIE',cls:'brandMsg'},
- {text:'DA NIJE VAS, NE BI BILO NI ME−NE!!',cls:'sloganMsg'},
- {text:'HVALA NA UKAZANOM POVJERENJU',cls:'thanksMsg'},
- {text:'Dobro jutro, Charlie. 💙'},
- {text:'Tu sam za tebe.'},
- {text:'Imamo rezervaciju.'},
- {text:'Putnik je stigao.'},
- {text:'Vrijeme je za pauzu.'},
- {text:'Hvala vam na vožnji.'},
- {text:'Lana je spremna. 🚕'}
+// Original Lana passenger-message area: exactly three messages, passenger-facing only.
+const PASSENGER_SETS=[
+ ['👋 Dobro došli!','Želite li spojiti svoj telefon putem Bluetootha?','Ako vam nešto treba, samo recite Lani.'],
+ ['🎵 Želite li slušati svoju glazbu?','Možete se spojiti Bluetoothom na radio.','Ugodna vožnja i bezbrižno putovanje.'],
+ ['📍 Stigli smo.','Hvala vam što ste se vozili s VAŠ CHARLIE.','Želimo vam ugodan ostatak dana!'],
+ ['💙 Drago nam je što ste s nama.','Ako želite preporuku u Osijeku, pitajte Lanu.','Uživajte u vožnji.'],
+ ['🙏 Hvala na ukazanom povjerenju.','Ako vam treba račun ili pomoć, samo recite.','Doviđenja i sretan put!']
 ];
-const MESSAGE_PATHS=[
- {x:'8%',y:'12%',fromX:'-125%',fromY:'-90%',toX:'145%',toY:'85%',rot:'-8deg',toRot:'5deg',dur:5200,size:'clamp(12px,2.8vw,19px)'},
- {x:'38%',y:'26%',fromX:'115%',fromY:'-110%',toX:'-125%',toY:'75%',rot:'7deg',toRot:'-6deg',dur:5600,size:'clamp(11px,2.5vw,18px)'},
- {x:'17%',y:'50%',fromX:'-140%',fromY:'20%',toX:'125%',toY:'-80%',rot:'-5deg',toRot:'8deg',dur:5000,size:'clamp(12px,2.7vw,19px)'},
- {x:'45%',y:'63%',fromX:'120%',fromY:'80%',toX:'-120%',toY:'-65%',rot:'5deg',toRot:'-4deg',dur:5700,size:'clamp(11px,2.4vw,17px)'},
- {x:'10%',y:'78%',fromX:'-100%',fromY:'110%',toX:'130%',toY:'-100%',rot:'4deg',toRot:'-7deg',dur:5100,size:'clamp(12px,2.6vw,18px)'},
- {x:'52%',y:'8%',fromX:'100%',fromY:'-70%',toX:'-135%',toY:'105%',rot:'-6deg',toRot:'6deg',dur:5400,size:'clamp(11px,2.4vw,17px)'}
-];
-let lanaMessageIndex=0;
-function showLanaMessage(){
- const track=$('#messageTrack'); if(!track)return;
- const item=LANA_MESSAGES[lanaMessageIndex++%LANA_MESSAGES.length];
- const p=MESSAGE_PATHS[(lanaMessageIndex-1)%MESSAGE_PATHS.length];
- const el=document.createElement('div');
- el.className='lanaMsg '+(item.cls||'');
- el.textContent=item.text;
- el.style.setProperty('--x',p.x);el.style.setProperty('--y',p.y);
- el.style.setProperty('--fromX',p.fromX);el.style.setProperty('--fromY',p.fromY);
- el.style.setProperty('--toX',p.toX);el.style.setProperty('--toY',p.toY);
- el.style.setProperty('--rot',p.rot);el.style.setProperty('--toRot',p.toRot);
- el.style.setProperty('--holdX',(lanaMessageIndex%2?'7%':'-6%'));
- el.style.setProperty('--holdY',(lanaMessageIndex%3?'0%':'4%'));
- el.style.setProperty('--holdRot',lanaMessageIndex%2?'1deg':'-1deg');
- el.style.setProperty('--dur',p.dur+'ms');el.style.setProperty('--size',p.size);
- el.style.setProperty('--weight',item.cls?'950':'750');
- track.appendChild(el);
- setTimeout(()=>el.remove(),Number(p.dur)+150);
+let passengerSetIndex=0;
+function renderPassengerMessages(){
+ const box=$('#passengerMessages'); if(!box)return;
+ box.innerHTML='';
+ (PASSENGER_SETS[passengerSetIndex]||PASSENGER_SETS[0]).forEach((text,i)=>{
+   const el=document.createElement('div');
+   el.className='passengerMsg';
+   el.textContent=text;
+   box.appendChild(el);
+ });
 }
-function startLanaMessages(){
- showLanaMessage();
- setInterval(showLanaMessage,2300);
+function rotatePassengerMessages(){
+ const box=$('#passengerMessages'); if(!box)return;
+ [...box.children].forEach(el=>el.classList.add('leaving'));
+ setTimeout(()=>{
+   passengerSetIndex=(passengerSetIndex+1)%PASSENGER_SETS.length;
+   renderPassengerMessages();
+ },650);
 }
-setTimeout(startLanaMessages,700);
+renderPassengerMessages();
+setInterval(rotatePassengerMessages,8500);
 
 function speak(text,lang){if(!('speechSynthesis'in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=lang||'hr-HR';speechSynthesis.cancel();speechSynthesis.speak(u)}
 $('#voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){open('Glasovne naredbe','<p>Ovaj preglednik ne daje Lani pristup prepoznavanju glasa. Tekstualne naredbe i dalje rade.</p>');return}const r=new SR();r.lang='hr-HR';r.onresult=e=>{const t=e.results[0][0].transcript.toLowerCase();if(t.includes('započni')||t.includes('započni smjenu'))$('#shiftBtn').click();else if(t.includes('cijena'))open('Kalkulator cijene','<p>Reci ili upiši udaljenost i cijenu po kilometru.</p>');else open('Lana je čula','<p>„'+e.results[0][0].transcript+'“</p>')};r.start()};
