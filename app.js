@@ -27,7 +27,7 @@ if(k==='more')open('Lana alati','<button class="action" id="reset">NOVI DAN / OB
 document.addEventListener('click',e=>{
 if(e.target.id==='calc'){const km=+$('#fareKm').value||0,r=+$('#fareRate').value||0,s=+$('#fareStart').value||0;$('#fareResult').textContent=(s+km*r).toFixed(2)+' €'}
 if(e.target.id==='locate'){if(!navigator.geolocation){$('#locResult').textContent='GPS nije dostupan.';return}$('#locResult').textContent='Tražim lokaciju…';navigator.geolocation.getCurrentPosition(p=>$('#locResult').innerHTML='📍 '+p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5),()=>$('#locResult').textContent='Lokaciju nije moguće dohvatiti. Provjeri dozvolu.')}
-if(e.target.dataset.lang){const l=e.target.dataset.lang;const map={'🇬🇧 English':'Hello, welcome. Do you want to connect your phone by Bluetooth?','🇩🇪 Deutsch':'Willkommen. Möchten Sie Ihr Telefon per Bluetooth verbinden?','🇷🇺 Русский':'Добро пожаловать. Хотите подключить телефон по Bluetooth?','🇮🇹 Italiano':'Benvenuti. Volete collegare il telefono tramite Bluetooth?','🇫🇷 Français':'Bienvenue. Voulez-vous connecter votre téléphone par Bluetooth ?','🇪🇸 Español':'Bienvenidos. ¿Quieren conectar el teléfono por Bluetooth?'};$('#phrase').textContent=map[l];speak(map[l],l)}
+if(e.target.dataset.langIndex!==undefined){const i=Number(e.target.dataset.langIndex);const x=LANGS[i];if(x){$('#phrase').textContent=x[2];speak(x[2],x[3])}}
 if(e.target.dataset.say){$('#speakResult').textContent=e.target.dataset.say;speak(e.target.dataset.say,'')}
 if(e.target.id==='saveRide'){const km=+$('#rideKm').value||0,p=+$('#ridePrice').value||0;data.km+=km;data.income+=p;data.rides+=1;save();close()}
 if(e.target.id==='saveFuel'){data.km+=+$('#addKm').value||0;data.fuel+=+$('#addFuel').value||0;save();close()}
