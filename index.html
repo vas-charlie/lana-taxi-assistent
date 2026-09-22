@@ -3,22 +3,20 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071a2b"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE, TAKSI OSIJEK i TAXI OSIJEK.">
-<link rel="manifest" href="/manifest.json?v=11"><link rel="stylesheet" href="/style.css?v=11">
+<link rel="manifest" href="/manifest.json?v=12"><link rel="stylesheet" href="/style.css?v=12">
 <title>LANA | VAŠ CHARLIE | TAXI OSIJEK</title>
 </head>
 <body>
 <div class="app">
-<header class="top"><div class="brand"><div class="logo">L</div><div><b>VAŠ CHARLIE</b><span>LANA · TAXI ASSISTENT</span></div></div><div id="clock">--:--</div></header>
-
-<section class="lanaSpace" aria-label="Lana i komunikacijski prostor">
-  <div class="lanaPortrait" aria-label="Lana">
+<main class="lanaStage" aria-label="Lana taxi asistent">
+  <section class="lanaVisual" aria-label="Lana">
     <img src="https://raw.githubusercontent.com/vas-charlie/vas-charlie-web/main/lana-shell.webp" alt="Lana" class="lanaReal" />
-  </div>
-  <div class="lanaSpeech" id="lanaSpeech">Tu sam za tebe, Charlie. 💙</div>
-  <div class="lanaMessageSpace" id="lanaMessageSpace" aria-live="polite" aria-label="Lanin komunikacijski prostor">
-    <div class="messageTrack" id="messageTrack"></div>
-  </div>
-</section>
+  </section>
+  <section class="passengerSpace" aria-label="Poruke putnicima">
+    <div class="passengerTitle">PORUKE ZA PUTNIKE</div>
+    <div class="passengerMessages" id="passengerMessages"></div>
+  </section>
+</main>
 
 <section class="status"><div><span class="dot" id="statusDot"></span><div><strong id="statusTitle">Lana je spremna</strong><small id="statusSub">Nema aktivne smjene</small></div></div><button class="voice" id="voiceBtn">🎙️</button></section>
 <section class="hero"><div><p class="eyebrow">TAKSI OSIJEK · TAXI OSIJEK</p><h1>Bok, Charlie. 💙</h1><p class="lead">Tvoja taxi pomoćnica. Jedan ekran, jasne radnje, bez lutanja po izbornicima.</p></div><div class="shiftActions"><button class="primary" id="shiftBtn">ZAPOČNI SMJENU</button><button class="secondary" id="pauseBtn" hidden>PAUZA</button></div></section>
@@ -29,13 +27,13 @@
 <section class="tools">
 <button data-open="ride">🚕 Nova vožnja</button><button data-open="fuel">⛽ Gorivo & km</button><button data-open="income">🧾 Uber · Bolt · Taxi</button><button data-open="passenger">🌍 Putnik</button><button data-open="more">⚙️ Više</button>
 </section>
-<footer>DA NIJE VAS, NE BI BILO NI ME−NE!!</footer>
+<footer>VAŠ CHARLIE · DA NIJE VAS, NE BI BILO NI ME−NE!!</footer>
 </div>
 <div class="modal" id="modal"><div class="sheet"><button class="close" id="close">×</button><div id="sheetContent"></div></div></div>
-<script src="/app.js?v=11"></script>
+<script src="/app.js?v=12"></script>
 <script>
 if('serviceWorker'in navigator){
- navigator.serviceWorker.register('/sw-v10.js?v=11',{updateViaCache:'none'})
+ navigator.serviceWorker.register('/sw-v10.js?v=12',{updateViaCache:'none'})
  .then(r=>r.update()).catch(()=>{});
 }
 </script>
