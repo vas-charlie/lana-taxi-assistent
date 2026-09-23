@@ -1,4 +1,4 @@
-const BRAND_MESSAGES=['VAŠ CHARLIE','HVALA NA UKAZANOM POVJERENJU','DA NIJE VAS, NE BI BILO NI MENE!!'];
+const BRAND_MESSAGES=['VAŠ CHARLIE','HVALA NA POVJERENJU','DA NIJE VAS, NE BI BILO NI MENE!!'];
 const GREETINGS={
  standard:'Dobro došli! Drago nam je što ste s nama.',
  warm:'Želimo vam ugodnu i lijepu vožnju.',
