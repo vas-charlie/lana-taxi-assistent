@@ -37,7 +37,41 @@ $('shellVoiceCore').onclick=()=>{showSpeech('Bok Čarli. Lana je spremna. Reci �
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
 function startRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}if(listening)return;recognition=new SR();recognition.lang='hr-HR';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';showSpeech('Čula sam: '+text);handleCommand(text)};recognition.onerror=()=>{showSpeech('Nisam uspjela čuti naredbu.');stopRecognition()};recognition.onend=()=>stopRecognition();recognition.start()}
 function stopRecognition(){listening=false;if(recognition){try{recognition.stop()}catch{}}recognition=null;const b=$('shellMic');if(b)b.classList.remove('active');if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'}
-function handleCommand(raw){const t=raw.toLowerCase();if(t.includes('započni')||t.includes('pokreni smjenu'))toggleShift(true);else if(t.includes('pauz')){showSpeech('U redu, pauza.');}else if(t.includes('pozdravi'))greet('standard');else if(t.includes('doviđenja'))greet('exit');else if(t.includes('prtljag'))greet('luggage');else speak('Razumjela sam naredbu: '+raw)}
+function openMaps(destination){
+ const q=encodeURIComponent(destination.trim());
+ window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving','_blank');
+}
+function handleCommand(raw){
+ const t=raw.toLowerCase().trim();
+ if(!t)return;
+ if(t.includes('započni')||t.includes('pokreni smjenu'))return toggleShift(true);
+ if(t.includes('pauz'))return showSpeech('U redu, pauza.',true);
+ if(t.includes('pozdravi'))return greet('standard');
+ if(t.includes('doviđenja'))return greet('exit');
+ if(t.includes('prtljag'))return greet('luggage');
+ if(t.includes('tišina')||t.includes('šuti')||t.includes('nemoj pričati')){
+   speechSynthesis.cancel(); return showSpeech('U redu, šutim.');
+ }
+ if(t.includes('pričaj sa mnom')||t.includes('pričaj malo')||t.includes('razgovaraj sa mnom')){
+   return showSpeech('Naravno, Čarli. Tu sam. Kako ide čekanje?',true);
+ }
+ if(t.includes('navigacij')||t.includes('otvori kartu')||t.includes('otvori google maps')){
+   const m=raw.match(/(?:do|prema|za)\\s+(.+)$/i);
+   if(m){openMaps(m[1]);return showSpeech('Otvaram navigaciju prema '+m[1]+'.',true);}
+   return showSpeech('Reci mi odredište, na primjer: navigacija do Hotela Kolovare.',true);
+ }
+ if(t.includes('glazb')||t.includes('muzik')){
+   if(t.includes('pauz')||t.includes('zaustav')){showSpeech('U redu, pauziraj glazbu na uređaju.');return}
+   return showSpeech('Glazbom mogu pomoći, ali upravljanje aplikacijom za reprodukciju ovisi o uređaju. Reci mi što želiš pustiti.',true);
+ }
+ if(t.includes('koliko košta')||t.includes('koliko košta')||t.includes('cijena vožnje')){
+   const m=raw.match(/(?:do|za|prema)\\s+(.+?)(?:\\?|$)/i);
+   const dest=m?.[1]?.trim();
+   if(dest){showSpeech('Razumjela sam. Za '+dest+' trebam cestovnu udaljenost i tvoju aktivnu tarifu da izračunam točnu cijenu.',true);return}
+   return showSpeech('Reci mi odredište, na primjer: koliko košta odavde do Hotela Kolovare.',true);
+ }
+ return speak('Razumjela sam. Reci mi što želiš napraviti, na primjer navigacija, glazba, razgovor ili izračun vožnje.');
+}
 function toggleShift(forceStart=false){shiftActive=forceStart?!shiftActive:!shiftActive;$('shellShift').classList.toggle('active',shiftActive);$('shellShiftSmall').textContent=shiftActive?'aktivna':'nema smjene';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';showSpeech(shiftActive?'Smjena je započela, Čarli.':'Smjena je završena, Čarli.',true)}
 $('shellShift').onclick=()=>toggleShift();
 $('shellTaxi').onclick=()=>{$('taxiPanel').hidden=false};
