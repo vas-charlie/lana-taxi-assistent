@@ -11,10 +11,18 @@ const $=id=>document.getElementById(id);
 function showBrand(){
  const box=$('brandMessages');if(!box)return;
  const old=box.querySelector('.brandMsg');
- if(old){old.classList.add('leaving');setTimeout(()=>old.remove(),650)}
+ if(old){old.classList.add('leaving');setTimeout(()=>old.remove(),1500)}
  const el=document.createElement('div');
  el.className='brandMsg brandMsg-'+brandIndex;
- el.textContent=BRAND_MESSAGES[brandIndex];
+ el.style.animationDelay='180ms';
+ const text=BRAND_MESSAGES[brandIndex];
+ [...text].forEach((ch,i)=>{
+   const span=document.createElement('span');
+   span.className='brandLetter';
+   span.style.animationDelay=(i*32)+'ms';
+   span.textContent=ch===' '? '\\u00a0' : ch;
+   el.appendChild(span);
+ });
  box.appendChild(el);
  brandIndex=(brandIndex+1)%BRAND_MESSAGES.length;
 }
