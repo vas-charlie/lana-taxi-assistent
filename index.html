@@ -1,24 +1,61 @@
 <!doctype html>
 <html lang="hr"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#eef6ff"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE.">
-<link rel="manifest" href="/manifest.json?v=21"><link rel="stylesheet" href="/style.css?v=21"><title>LANA | VAŠ CHARLIE</title>
+<meta name="theme-color" content="#eaf2ff"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE.">
+<link rel="manifest" href="/manifest.json?v=31"><link rel="stylesheet" href="/style.css?v=31"><title>LANA | VAŠ CHARLIE</title>
 </head><body>
-<main class="lanaApp" aria-label="Lana taxi asistent">
-<section class="lanaPortraitArea"><img src="https://raw.githubusercontent.com/vas-charlie/vas-charlie-web/main/lana-shell.webp" alt="Lana" class="lanaReal"></section>
-<section class="passengerArea" aria-label="Lanin komunikacijski prostor">
-  <div class="brandMessages" id="brandMessages"></div>
-  <div class="passengerMessages" id="passengerMessages" hidden></div>
-</section>
-</main>
-<nav class="quickBar" aria-label="Brze tipke">
- <button id="quickGreeting">👋<span>Pozdravi<br>putnika</span></button>
- <button id="quickTrip">😊<span>Lijepo<br>putovanje</span></button>
- <button id="quickLuggage">🧳<span>Pomoć s<br>prtljagom?</span></button>
- <button id="quickThanks">👍<span>Hvala na<br>povjerenju</span></button>
- <button id="quickBye">👋<span>Doviđenja<br>i sretan put</span></button>
-</nav>
-<div class="hiddenTools"><button id="shiftBtn">ZAPOČNI SMJENU</button><button id="pauseBtn">PAUZA</button><button id="voiceBtn">🎙️</button></div>
-<script src="/app.js?v=21"></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v10.js?v=21',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});</script>
+<div class="lana-shell" id="lanaShell">
+  <header class="lana-topbar">
+    <div class="lana-brandline"><span class="lana-brand">LANA</span><span class="lana-brand-sub">VAŠ CHARLIE</span></div>
+    <div class="lana-live-status" id="liveStatus">● spremna</div>
+  </header>
+
+  <main class="lana-stage">
+    <section class="lana-portrait"><img src="https://raw.githubusercontent.com/vas-charlie/vas-charlie-web/main/lana-shell.webp" alt="Lana" class="lanaReal"></section>
+    <section class="lana-communication" aria-label="Lanin komunikacijski prostor">
+      <div class="lana-speech" id="lanaSpeech" aria-live="polite"></div>
+      <div class="brandMessages" id="brandMessages"></div>
+    </section>
+  </main>
+
+  <section class="lana-greetings" aria-label="Brzi pozdravi putnika">
+    <div class="lana-greetings-title">👥 PUTNIK</div>
+    <button class="lana-greet-btn primary" data-greet="standard"><strong>👋</strong>Pozdravi</button>
+    <button class="lana-greet-btn" data-greet="warm"><strong>🙂</strong>Topli pozdrav</button>
+    <button class="lana-greet-btn" data-greet="returning"><strong>🔁</strong>Stalni klijent</button>
+    <button class="lana-greet-btn" data-greet="exit"><strong>👋</strong>Hvala / doviđenja</button>
+    <button class="lana-greet-btn" data-greet="luggage"><strong>🧳</strong>Pomoć s prtljagom</button>
+  </section>
+
+  <nav class="lana-commandbar" aria-label="Stalne kontrole Lane">
+    <button id="shellMic"><strong>🎙️</strong>Mikrofon<span class="small" id="shellMicSmall">isključen</span></button>
+    <button id="shellShift"><strong>🕐</strong>Smjena<span class="small" id="shellShiftSmall">nema smjene</span></button>
+    <button class="voice-core" id="shellVoiceCore" aria-label="Lana glasovni centar">≋</button>
+    <button id="shellTaxi"><strong>🚕</strong>Taksimetar<span class="small">A → B</span></button>
+    <button id="shellPassenger"><strong>🧑‍💼</strong>Putnik<span class="small">poruke</span></button>
+  </nav>
+
+  <section class="lana-panel" id="taxiPanel" hidden>
+    <div class="panel-head"><strong>🚕 Brzi izračun vožnje</strong><button data-close="taxiPanel">✕</button></div>
+    <label>Polazište<input id="taxiFrom" placeholder="npr. Osijek"></label>
+    <label>Odredište<input id="taxiTo" placeholder="npr. Zračna luka"></label>
+    <div class="panel-grid"><label>Putnici<select id="taxiPassengers"><option>1–4</option><option>5–6</option></select></label><label>Km<input id="taxiKm" type="number" min="0" step="0.1" placeholder="0"></label></div>
+    <div class="panel-actions"><button id="taxiCalc">Izračunaj</button><button class="secondary" data-close="taxiPanel">Zatvori</button></div>
+    <div class="panel-result" id="taxiResult">Cijena se računa prema tvojoj tarifi kada je uneseš.</div>
+  </section>
+
+  <section class="lana-panel" id="passengerPanel" hidden>
+    <div class="panel-head"><strong>🧑‍💼 Putnik</strong><button data-close="passengerPanel">✕</button></div>
+    <p>Brze poruke koje Lana može <strong>izgovoriti naglas</strong>.</p>
+    <div class="passenger-grid">
+      <button data-say="👋 Dobro došli! Drago nam je što ste s nama.">👋 Pozdrav</button>
+      <button data-say="😊 Želimo vam ugodno putovanje.">😊 Ugodno putovanje</button>
+      <button data-say="🧳 Trebate li pomoć s prtljagom?">🧳 Prtljaga</button>
+      <button data-say="👍 Hvala na ukazanom povjerenju.">👍 Hvala</button>
+      <button data-say="👋 Doviđenja i sretan put!">👋 Doviđenja</button>
+    </div>
+  </section>
+</div>
+<script src="/app.js?v=31"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v10.js?v=31',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});</script>
 </body></html>
