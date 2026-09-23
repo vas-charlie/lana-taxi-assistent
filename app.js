@@ -44,5 +44,5 @@ $('shellTaxi').onclick=()=>{$('taxiPanel').hidden=false};
 $('shellPassenger').onclick=()=>{$('passengerPanel').hidden=false};
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).hidden=true));
 $('taxiCalc').onclick=()=>{const km=Number($('taxiKm').value||0),big=$('taxiPassengers').value==='5–6';if(!km){$('taxiResult').textContent='Unesi kilometražu.';return}const rate=big?1.8:1.5;const start=big?5:4;const price=start+km*rate;$('taxiResult').textContent='Privremeni izračun: '+price.toFixed(2)+' €. Tarife 1–6 ćemo spojiti kad unesemo službeni cjenik.';showSpeech('Privremeni izračun je '+price.toFixed(2)+' eura.',true)};
-showBrand();setInterval(showBrand,16000);
+showBrand();setInterval(showBrand,18200);
 if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
