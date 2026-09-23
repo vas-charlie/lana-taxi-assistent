@@ -1,33 +1,24 @@
 <!doctype html>
-<html lang="hr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#eef6ff">
-<meta name="description" content="LANA taxi asistent za VAŠ CHARLIE.">
-<link rel="manifest" href="/manifest.json?v=20">
-<link rel="stylesheet" href="/style.css?v=20">
-<title>LANA | VAŠ CHARLIE</title>
-</head>
-<body>
+<html lang="hr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef6ff"><meta name="description" content="LANA taxi asistent za VAŠ CHARLIE.">
+<link rel="manifest" href="/manifest.json?v=21"><link rel="stylesheet" href="/style.css?v=21"><title>LANA | VAŠ CHARLIE</title>
+</head><body>
 <main class="lanaApp" aria-label="Lana taxi asistent">
-  <section class="lanaPortraitArea" aria-label="Lana">
-    <img src="https://raw.githubusercontent.com/vas-charlie/vas-charlie-web/main/lana-shell.webp" alt="Lana" class="lanaReal">
-  </section>
-  <section class="passengerArea" aria-label="Poruke putnicima">
-    <div class="passengerMessages" id="passengerMessages"></div>
-  </section>
+<section class="lanaPortraitArea"><img src="https://raw.githubusercontent.com/vas-charlie/vas-charlie-web/main/lana-shell.webp" alt="Lana" class="lanaReal"></section>
+<section class="passengerArea" aria-label="Lanin komunikacijski prostor">
+  <div class="brandMessages" id="brandMessages"></div>
+  <div class="passengerMessages" id="passengerMessages" hidden></div>
+</section>
 </main>
-<div class="hiddenTools" aria-hidden="true">
-  <button id="shiftBtn">ZAPOČNI SMJENU</button>
-  <button id="pauseBtn">PAUZA</button>
-  <button id="voiceBtn">🎙️</button>
-</div>
-<script src="/app.js?v=20"></script>
-<script>
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('/sw-v10.js?v=20',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-}
-</script>
-</body>
-</html>
+<nav class="quickBar" aria-label="Brze tipke">
+ <button id="quickGreeting">👋<span>Pozdravi<br>putnika</span></button>
+ <button id="quickTrip">😊<span>Lijepo<br>putovanje</span></button>
+ <button id="quickLuggage">🧳<span>Pomoć s<br>prtljagom?</span></button>
+ <button id="quickThanks">👍<span>Hvala na<br>povjerenju</span></button>
+ <button id="quickBye">👋<span>Doviđenja<br>i sretan put</span></button>
+</nav>
+<div class="hiddenTools"><button id="shiftBtn">ZAPOČNI SMJENU</button><button id="pauseBtn">PAUZA</button><button id="voiceBtn">🎙️</button></div>
+<script src="/app.js?v=21"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v10.js?v=21',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});</script>
+</body></html>
