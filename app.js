@@ -1,17 +1,22 @@
 const BRAND_MESSAGES=['VAŠ CHARLIE','HVALA NA UKAZANOM POVJERENJU','DA NIJE VAS, NE BI BILO NI MENE!!'];
 const GREETINGS={
- standard:'👋 Dobro došli! Drago nam je što ste s nama.',
- warm:'🙂 Želimo vam ugodnu i lijepu vožnju.',
- returning:'🔁 Drago nam je ponovno vas voziti.',
- exit:'👋 Hvala na ukazanom povjerenju. Doviđenja i sretan put!',
- luggage:'🧳 Trebate li pomoć s prtljagom? Slobodno recite.'
+ standard:'Dobro došli! Drago nam je što ste s nama.',
+ warm:'Želimo vam ugodnu i lijepu vožnju.',
+ returning:'Drago nam je ponovno vas voziti.',
+ exit:'Hvala na ukazanom povjerenju. Doviđenja i sretan put!',
+ luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'
 };
 let brandIndex=0, recognition=null, listening=false, shiftActive=false;
 const $=id=>document.getElementById(id);
 function showBrand(){
  const box=$('brandMessages');if(!box)return;
- const old=box.querySelector('.brandMsg');if(old)old.classList.add('leaving');
- setTimeout(()=>{box.replaceChildren();const el=document.createElement('div');el.className='brandMsg';el.textContent=BRAND_MESSAGES[brandIndex];box.appendChild(el);brandIndex=(brandIndex+1)%BRAND_MESSAGES.length},600);
+ const old=box.querySelector('.brandMsg');
+ if(old){old.classList.add('leaving');setTimeout(()=>old.remove(),650)}
+ const el=document.createElement('div');
+ el.className='brandMsg brandMsg-'+brandIndex;
+ el.textContent=BRAND_MESSAGES[brandIndex];
+ box.appendChild(el);
+ brandIndex=(brandIndex+1)%BRAND_MESSAGES.length;
 }
 function showSpeech(text,say=false){
  const box=$('lanaSpeech');if(!box)return;box.textContent=text;box.classList.add('show');clearTimeout(showSpeech.timer);showSpeech.timer=setTimeout(()=>box.classList.remove('show'),say?9000:6000);if(say)speak(text);
@@ -20,7 +25,7 @@ function preferredVoice(lang='hr-HR'){const vs=speechSynthesis.getVoices?.()||[]
 function speak(text,lang='hr-HR'){if(!('speechSynthesis'in window)){showSpeech('Na ovom uređaju glasovno čitanje nije dostupno.');return false}const u=new SpeechSynthesisUtterance(String(text).replace(/Charlie/gi,'Čarli'));u.lang=lang;u.voice=preferredVoice(lang);u.rate=1;u.pitch=1;speechSynthesis.cancel();speechSynthesis.resume();u.onstart=()=>{$('liveStatus').textContent='● Lana govori'};u.onend=()=>{$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'};u.onerror=()=>{$('liveStatus').textContent='● glas nije dostupan'};speechSynthesis.speak(u);return true}
 function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greet(b.dataset.greet)));
-document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say,true)));
+document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true);startRecognition()};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
 function startRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}if(listening)return;recognition=new SR();recognition.lang='hr-HR';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';showSpeech('Čula sam: '+text);handleCommand(text)};recognition.onerror=()=>{showSpeech('Nisam uspjela čuti naredbu.');stopRecognition()};recognition.onend=()=>stopRecognition();recognition.start()}
