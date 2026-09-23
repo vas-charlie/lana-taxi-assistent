@@ -17,6 +17,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden}.lana-shell{position:f
 @media(max-width:760px){.brandMsg{width:92%;font-size:clamp(20px,4.6vw,36px)}.brandMsg-2{font-size:clamp(22px,4.85vw,40px)}}
 
 
-/* MOVE THE MESSAGE AREA EVEN CLOSER TO LANA */
-@media(min-width:761px){.brandMessages{left:-18%;right:18%;width:auto}}
-@media(max-width:760px){.brandMessages{left:-10%;right:10%;width:auto;padding-left:0;padding-right:0}}
+
+/* BRING BRAND MESSAGES EVEN CLOSER TO LANA */
+@media(min-width:761px){.brandMessages{left:-28%;right:28%;width:auto}}
+@media(max-width:760px){.brandMessages{left:-16%;right:16%;width:auto;padding-left:0;padding-right:0}}
