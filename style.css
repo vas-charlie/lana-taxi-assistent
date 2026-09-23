@@ -96,7 +96,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden}
   font-weight:900;
   text-wrap:balance;
   overflow:visible;
-  animation-duration:5.8s;
+  animation-duration:8s;
 }
 .brandMsg-2{font-size:clamp(30px,3.85vw,58px);letter-spacing:.02em}
 .brandLetter{
