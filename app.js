@@ -29,7 +29,8 @@ function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=async()=>{const started=await startRecognition();if(started)setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
 const micButton=$('shellMic');
-if(micButton){micButton.type='button';micButton.addEventListener('pointerup',async e=>{e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else startRecognition()},{passive:false});}
+let lastMicTap=0;
+if(micButton){micButton.type='button';micButton.addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation();const now=Date.now();if(now-lastMicTap<900)return;lastMicTap=now;if(listening)stopRecognition();else startRecognition()},{passive:false});}
 function startRecognition(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return false}
