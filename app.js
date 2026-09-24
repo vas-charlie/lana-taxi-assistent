@@ -35,9 +35,8 @@ async function startRecognition(){
  if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return false}
  if(listening||micCheckInProgress)return listening;
  micCheckInProgress=true;
- try{if(navigator.mediaDevices?.getUserMedia){const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});stream.getTracks().forEach(track=>track.stop())}}
- catch(e){micCheckInProgress=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● mikrofon nije dopušten';showSpeech('Čarli, mikrofon nije dopušten. Dodirni ikonu mikrofona i dopusti pristup mikrofonu.');return false}
- micCheckInProgress=false;
+ // Do not await getUserMedia here. Android Web Speech recognition must be started
+ // directly from the user's tap; awaiting a permission probe can lose user activation.
  recognition=new SR();
  recognition.lang='hr-HR';
  recognition.interimResults=true;
