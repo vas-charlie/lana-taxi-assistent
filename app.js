@@ -17,7 +17,7 @@ function syncPassengerTariff(){const p=selectedPassengers();const sel=$('taxiTar
 function activeTariff(){const i=Number($('taxiTariff')?.value||0);return tariffs[i]||tariffs[0]}
 function renderTariffs(){const sel=$('taxiTariff');if(!sel)return;sel.innerHTML=tariffs.map((x,i)=>'<option value="'+i+'">'+x.name+'</option>').join('');const i=Number(sel.value||0),t=tariffs[i]||tariffs[0];$('taxiStart').value=t.start;$('taxiRate').value=t.perKm}
 const LANGUAGES={hr:{name:'Hrvatski',speech:'hr-HR',code:'hr'},en:{name:'English',speech:'en-US',code:'en'},de:{name:'Deutsch',speech:'de-DE',code:'de'},it:{name:'Italiano',speech:'it-IT',code:'it'},fr:{name:'Français',speech:'fr-FR',code:'fr'},es:{name:'Español',speech:'es-ES',code:'es'},ru:{name:'Русский',speech:'ru-RU',code:'ru'},cs:{name:'Čeština',speech:'cs-CZ',code:'cs'},nl:{name:'Nederlands',speech:'nl-NL',code:'nl'},pl:{name:'Polski',speech:'pl-PL',code:'pl'},hu:{name:'Magyar',speech:'hu-HU',code:'hu'},sl:{name:'Slovenščina',speech:'sl-SI',code:'sl'}};let passengerLang=localStorage.getItem('lanaPassengerLang')||'en';let liveTranslate=false,translateDirection='toPassenger';function currentLanguage(){return LANGUAGES[passengerLang]||LANGUAGES.en}function setPassengerLanguage(code){if(!LANGUAGES[code])return;passengerLang=code;localStorage.setItem('lanaPassengerLang',code);document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===code));const b=$('selectedLang');if(b)b.textContent='🌐 '+currentLanguage().name;showSpeech('Odabran je jezik: '+currentLanguage().name+'.')}async function translateText(text,from,to){const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to);if(!r.ok)throw new Error('translation');const d=await r.json();return d?.responseData?.translatedText||text}async function greetInPassengerLanguage(key){const source=GREETINGS[key]||GREETINGS.standard;if(passengerLang==='hr')return greet(key);try{const t=await translateText(source,'hr',currentLanguage().code);showSpeech(t,true);speak(t,currentLanguage().speech)}catch{showSpeech('Prijevod pozdrava trenutno nije dostupan.',true)}}
-async function greetInPassengerLanguageText(source){if(passengerLang==='hr')return showSpeech(source,true);try{const t=await translateText(source,'hr',currentLanguage().code);showSpeech(t,true);speak(t,currentLanguage().speech)}catch{showSpeech('Prijevod pozdrava trenutno nije dostupan.',true)}}function startTranslationRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Live prijevod nije podržan na ovom pregledniku.',true);return}if(listening)stopRecognition();recognition=new SR();recognition.lang=translateDirection==='toPassenger'?'hr-HR':currentLanguage().speech;recognition.interimResults=false;recognition.continuous=true;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='prevodim…';$('liveStatus').textContent='● live prijevod'};recognition.onresult=async e=>{const t=e.results?.[0]?.[0]?.transcript?.trim();if(!t)return;try{const from=translateDirection==='toPassenger'?'hr':currentLanguage().code;const to=translateDirection==='toPassenger'?currentLanguage().code:'hr';const out=await translateText(t,from,to);showSpeech(out,true);speak(out,translateDirection==='toPassenger'?currentLanguage().speech:'hr-HR')}catch{showSpeech('Prijevod trenutno nije dostupan.',true)}};recognition.onend=()=>{listening=false;if(liveTranslate)setTimeout(startTranslationRecognition,350)};recognition.onerror=()=>{listening=false;if(liveTranslate)setTimeout(startTranslationRecognition,700)};recognition.start()}function toggleLiveTranslate(){liveTranslate=!liveTranslate;const b=$('liveTranslateBtn');if(b)b.textContent=liveTranslate?'⏹️ Zaustavi live prijevod':'🔄 Live prijevod';if(liveTranslate)startTranslationRecognition();else stopRecognition()}function toggleTranslationDirection(){translateDirection=translateDirection==='toPassenger'?'toDriver':'toPassenger';const b=$('translateDirection');if(b)b.textContent=translateDirection==='toPassenger'?'Čarli → putnik':'Putnik → Čarli';if(liveTranslate)startTranslationRecognition()}function greetInPassengerLanguageOld(key){return greet(key)}
+async function greetInPassengerLanguageText(source){if(passengerLang==='hr')return showSpeech(source,true);try{const t=await translateText(source,'hr',currentLanguage().code);showSpeech(t,true);speak(t,currentLanguage().speech)}catch{showSpeech('Prijevod pozdrava trenutno nije dostupan.',true)}}function startTranslationRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Live prijevod nije podržan na ovom pregledniku.',true);return}if(listening)stopRecognition();recognition=new SR();recognition.lang=translateDirection==='toPassenger'?'hr-HR':currentLanguage().speech;recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='prevodim…';$('liveStatus').textContent='● live prijevod'};recognition.onresult=async e=>{const t=e.results?.[0]?.[0]?.transcript?.trim();if(!t)return;try{const from=translateDirection==='toPassenger'?'hr':currentLanguage().code;const to=translateDirection==='toPassenger'?currentLanguage().code:'hr';const out=await translateText(t,from,to);showSpeech(out,true);speak(out,translateDirection==='toPassenger'?currentLanguage().speech:'hr-HR')}catch{showSpeech('Prijevod trenutno nije dostupan.',true)}};recognition.onend=()=>{listening=false;if(liveTranslate)setTimeout(startTranslationRecognition,350)};recognition.onerror=()=>{listening=false;if(liveTranslate)setTimeout(startTranslationRecognition,700)};recognition.start()}function toggleLiveTranslate(){liveTranslate=!liveTranslate;const b=$('liveTranslateBtn');if(b)b.textContent=liveTranslate?'⏹️ Zaustavi live prijevod':'🔄 Live prijevod';if(liveTranslate)startTranslationRecognition();else stopRecognition()}function toggleTranslationDirection(){translateDirection=translateDirection==='toPassenger'?'toDriver':'toPassenger';const b=$('translateDirection');if(b)b.textContent=translateDirection==='toPassenger'?'Čarli → putnik':'Putnik → Čarli';if(liveTranslate)startTranslationRecognition()}function greetInPassengerLanguageOld(key){return greet(key)}
 const GREETINGS={
  standard:'Dobro došli! Drago nam je što ste s nama.',
  warm:'Želimo vam ugodnu i lijepu vožnju.',
@@ -97,7 +97,8 @@ async function startRecognition(){
   recognition.interimResults=false;
   recognition.continuous=true;
   recognition.maxAlternatives=3;
-  recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};
+  recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša · čekam glas'};
+  recognition.onnomatch=()=>{$('liveStatus').textContent='● nisam razumjela';};
   recognition.onaudiostart=()=>{$('liveStatus').textContent='● Lana sluša · zvuk'};
   recognition.onspeechstart=()=>{$('liveStatus').textContent='● Lana sluša · čujem'};
   recognition.onresult=e=>{
@@ -108,11 +109,23 @@ async function startRecognition(){
     }
   };
   recognition.onerror=e=>{
-    if(e?.error==='aborted')return;
-    if(e?.error==='not-allowed'||e?.error==='service-not-allowed'){
-      listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● uključi dozvolu mikrofona';return
+    const err=e?.error||'unknown';
+    if(err==='aborted')return;
+    if(err==='not-allowed'||err==='service-not-allowed'){
+      listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● mikrofon nije dopušten';return
     }
-    if(listening)setTimeout(()=>{if(listening)restartRecognition()},700);else stopRecognition()
+    if(err==='network'){
+      $('liveStatus').textContent='● glasovna usluga nije dostupna';
+      if(listening)setTimeout(()=>{if(listening)restartRecognition()},1200);
+      return
+    }
+    if(err==='no-speech'){
+      $('liveStatus').textContent='● nisam čula govor';
+      if(listening)setTimeout(()=>{if(listening)restartRecognition()},500);
+      return
+    }
+    $('liveStatus').textContent='● greška mikrofona: '+err;
+    if(listening)setTimeout(()=>{if(listening)restartRecognition()},1000);else stopRecognition()
   };
   recognition.onend=()=>{if(listening)setTimeout(()=>{if(listening)restartRecognition()},450);else stopRecognition()};
   try{recognition.start()}catch(e){listening=false;recognition=null;$('shellMicSmall').textContent='ponovi';$('liveStatus').textContent='● mikrofon nije pokrenut'}
