@@ -11,6 +11,9 @@ const DEFAULT_TARIFFS=[
 function loadTariffs(){try{const saved=JSON.parse(localStorage.getItem('lanaTariffs')||'null');if(Array.isArray(saved)&&saved.length===6)return saved}catch{}return DEFAULT_TARIFFS.map(x=>({...x}))}
 let tariffs=loadTariffs();
 function saveTariffs(){localStorage.setItem('lanaTariffs',JSON.stringify(tariffs))}
+function selectedPassengers(){return $('taxiPassengers')?.value||'1–4'}
+function syncPassengerTariff(){const p=selectedPassengers();const sel=$('taxiTariff');if(!sel)return;if(p==='5–6'){const idx=tariffs.findIndex(x=>x.name.includes('Tarifa 2'));if(idx>=0)sel.value=String(idx)}renderTariffs()}
+
 function activeTariff(){const i=Number($('taxiTariff')?.value||0);return tariffs[i]||tariffs[0]}
 function renderTariffs(){const sel=$('taxiTariff');if(!sel)return;sel.innerHTML=tariffs.map((x,i)=>'<option value="'+i+'">'+x.name+'</option>').join('');const i=Number(sel.value||0),t=tariffs[i]||tariffs[0];$('taxiStart').value=t.start;$('taxiRate').value=t.perKm}
 const GREETINGS={
@@ -133,7 +136,9 @@ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',
 $('taxiTariff').addEventListener('change',renderTariffs);
 $('taxiStart').addEventListener('change',()=>{const i=Number($('taxiTariff').value||0);tariffs[i].start=Number($('taxiStart').value||0);saveTariffs()});
 $('taxiRate').addEventListener('change',()=>{const i=Number($('taxiTariff').value||0);tariffs[i].perKm=Number($('taxiRate').value||0);saveTariffs()});
+$('taxiPassengers').addEventListener('change',syncPassengerTariff);
 $('taxiCalc').onclick=()=>{const km=Number($('taxiKm').value||0);if(!km){$('taxiResult').textContent='Unesi kilometražu.';return}const tariff=activeTariff(),price=tariff.start+km*tariff.perKm;$('taxiResult').textContent=tariff.name+': '+tariff.start.toFixed(2)+' € start + '+tariff.perKm.toFixed(2)+' €/km = '+price.toFixed(2)+' €.';showSpeech('Po '+tariff.name+' za '+km.toFixed(1)+' kilometara cijena je oko '+price.toFixed(2)+' eura.',true)};
 renderTariffs();
+syncPassengerTariff();
 showBrand();setInterval(showBrand,18200);
 if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
