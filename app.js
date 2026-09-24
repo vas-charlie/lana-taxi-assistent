@@ -118,8 +118,9 @@ function handleCommand(raw){
    return showSpeech('Reci mi odredište, na primjer: navigacija do Hotela Kolovare.',true);
  }
  if(t.includes('glazb')||t.includes('muzik')){
-   if(t.includes('pauz')||t.includes('zaustav')){showSpeech('U redu, pauziraj glazbu na uređaju.');return}
-   return showSpeech('Glazbom mogu pomoći, ali upravljanje aplikacijom za reprodukciju ovisi o uređaju. Reci mi što želiš pustiti.',true);
+   if(t.includes('pauz')||t.includes('zaustav')){showSpeech('Za pauzu upotrijebi kontrolu glazbenog playera na tabletu.',true);return}
+   openMusicPanel();
+   return showSpeech('Otvaram glazbeni modul. Tablet šalje zvuk preko Bluetootha u Kodiaq.',true);
  }
  if(t.includes('koliko košta')||t.includes('cijena vožnje')||t.includes('koliko je do')){
    const m=raw.match(/(?:odavde\s+)?(?:do|za|prema)\s+(.+?)(?:\?|$)/i);
@@ -133,6 +134,23 @@ function toggleShift(forceStart=false){shiftActive=forceStart?true:!shiftActive;
 $('shellShift').onclick=()=>toggleShift();
 $('shellTaxi').onclick=()=>{$('taxiPanel').hidden=false};
 $('shellPassenger').onclick=()=>{$('passengerPanel').hidden=false};
+const musicGuideText='Ako želite svoju glazbu, možete je pustiti na tabletu. Tablet je već povezan s Kodiaqom preko Bluetootha pa će zvuk ići preko zvučnika vozila.';
+function openMusicPanel(){const p=$('musicPanel');if(p)p.hidden=false}
+function musicGuide(){showSpeech(musicGuideText,true);if($('musicResult'))$('musicResult').textContent=musicGuideText}
+$('musicOpen').onclick=()=>{
+  const candidates=['https://music.youtube.com/','https://open.spotify.com/'];
+  const target=window.confirm('Otvoriti YouTube Music?')?candidates[0]:candidates[1];
+  window.open(target,'_blank');
+  showSpeech('Otvaram glazbu na tabletu.',true);
+};
+$('musicBluetooth').onclick=()=>musicGuide();
+$('musicPause').onclick=()=>{
+  const media=document.querySelector('audio,video');
+  if(media){media.paused?media.play():media.pause();showSpeech(media.paused?'Glazba je pauzirana.':'Glazba nastavlja.',true);return}
+  if('mediaSession' in navigator){showSpeech('Zaustavi ili nastavi glazbu na tabletu. Android će, ako dopušta, proslijediti naredbu glazbenom playeru.',true);return}
+  showSpeech('Za pauzu ili nastavak glazbe upotrijebi kontrole glazbenog playera na tabletu.',true);
+};
+$('musicGuide').onclick=musicGuide;
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).hidden=true));
 $('taxiTariff').addEventListener('change',renderTariffs);
 $('taxiStart').addEventListener('change',()=>{const i=Number($('taxiTariff').value||0);tariffs[i].start=Number($('taxiStart').value||0);saveTariffs()});
