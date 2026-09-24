@@ -190,7 +190,7 @@ if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
   const greetings=document.querySelector('.lana-greetings');const lang=document.getElementById('selectedLang');if(greetings&&lang)greetings.insertBefore(btn,lang.nextSibling);else document.body.appendChild(btn);
   btn.addEventListener('click',()=>{
     const message='Dobro došli u VAŠ CHARLIE. Ja sam Lana, Charliejeva asistentica i tu sam da vam pomognem da vam vožnja bude što ugodnija. Ako želite svoju glazbu, Wi-Fi, informacije ili vam bilo što zatreba tijekom vožnje, samo mi se obratite. Uživajte u vožnji!';
-    showSpeech(message,true);
+    greetInPassengerLanguageText(message);
   });
 })();
 
