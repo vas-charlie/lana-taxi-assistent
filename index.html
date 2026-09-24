@@ -57,6 +57,15 @@
       <button data-say="👋 Doviđenja i sretan put!">👋 Doviđenja</button>
     </div>
   </section>
+
+  <section class="lana-panel" id="musicPanel" hidden>
+    <div class="panel-head"><strong>🎵 YouTube Music</strong><button data-close="musicPanel">✕</button></div>
+    <p>Glazba se pokreće na tabletu, a zvuk ide preko Bluetootha u zvučnike Kodiaqa.</p>
+    <label>Što želiš slušati?<input id="musicQuery" placeholder="npr. Deep Purple ili Smoke on the Water"></label>
+    <div class="panel-actions"><button id="musicSearch">▶️ Pusti u YouTube Musicu</button><button class="secondary" id="musicOpen">🎵 Otvori YouTube Music</button></div>
+    <div class="panel-actions"><button id="musicBluetooth">🔵 Bluetooth</button><button class="secondary" id="musicPause">⏯️ Pauza / nastavi</button><button class="secondary" id="musicGuide">🗣️ Upute putniku</button></div>
+    <div class="panel-result" id="musicResult">Reci: „Lana, pusti Deep Purple.”</div>
+  </section>
 </div>
 <script src="/app.js?v=31"></script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v10.js?v=31',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});</script>
