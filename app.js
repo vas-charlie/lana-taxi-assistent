@@ -1,12 +1,12 @@
 const BRAND_MESSAGES=['VAŠ CHARLIE','HVALA NA POVJERENJU','DA NIJE VAS, NE BI BILO NI MENE!!'];
 
 const DEFAULT_TARIFFS=[
- {name:'Tarifa 1 • Osijek',start:4,perKm:1.5},
- {name:'Tarifa 2 • Osijek noć/nedjelja • 5–6',start:5,perKm:1.8},
- {name:'Tarifa 3 • Osijek blagdan',start:4.5,perKm:1.65},
- {name:'Tarifa 4 • Osijek veliki blagdan',start:5,perKm:2},
- {name:'Tarifa 5 • Zadar',start:5,perKm:1.8},
- {name:'Tarifa 6 • Zadar noć',start:6,perKm:2.1}
+ {name:'Tarifa 1 • Osijek',start:3.50,perKm:1.40},
+ {name:'Tarifa 2 • Osijek noć/nedjelja • 5–6',start:4.50,perKm:1.70},
+ {name:'Tarifa 3 • Osijek blagdan',start:4.00,perKm:1.55},
+ {name:'Tarifa 4 • Osijek veliki blagdan',start:4.50,perKm:1.90},
+ {name:'Tarifa 5 • Zadar',start:4.50,perKm:1.70},
+ {name:'Tarifa 6 • Zadar noć',start:5.50,perKm:2.00}
 ];
 function loadTariffs(){try{const saved=JSON.parse(localStorage.getItem('lanaTariffs')||'null');if(Array.isArray(saved)&&saved.length===6)return saved}catch{}return DEFAULT_TARIFFS.map(x=>({...x}))}
 let tariffs=loadTariffs();
