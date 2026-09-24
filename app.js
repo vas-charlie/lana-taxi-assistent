@@ -47,14 +47,62 @@ function showBrand(){
 function showSpeech(text,say=false){
  const box=$('lanaSpeech');if(!box)return;box.textContent=text;box.classList.add('show');clearTimeout(showSpeech.timer);showSpeech.timer=setTimeout(()=>box.classList.remove('show'),say?9000:6000);if(say)speak(text);
 }
-function preferredVoice(lang='hr-HR'){const vs=speechSynthesis.getVoices?.()||[];const exact=vs.find(v=>v.lang?.toLowerCase()===lang.toLowerCase()&&v.localService);return exact||vs.find(v=>v.lang?.toLowerCase().startsWith(lang.slice(0,2).toLowerCase()))||vs.find(v=>v.lang?.toLowerCase().startsWith('hr'))||null}
-function speak(text,lang='hr-HR'){lanaSpeaking=true;if(!('speechSynthesis'in window)){showSpeech('Na ovom uređaju glasovno čitanje nije dostupno.');return false}const u=new SpeechSynthesisUtterance(String(text).replace(/Charlie/gi,'Čarli'));u.lang=lang;u.voice=preferredVoice(lang);u.rate=1;u.pitch=1;speechSynthesis.cancel();speechSynthesis.resume();u.onstart=()=>{$('liveStatus').textContent='● Lana govori'};u.onend=()=>{lanaSpeaking=false;$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'};u.onerror=()=>{lanaSpeaking=false;$('liveStatus').textContent='● glas nije dostupan'};speechSynthesis.speak(u);return true}
+const SPOKEN_CHARLIE={hr:'Čarli',en:'Charlie',de:'Tschärli',it:'Ciarli',fr:'Tcharli',es:'Chárli',ru:'Чарли',cs:'Čárlí',nl:'Tsjarlie',pl:'Czarli',hu:'Csárli',sl:'Čarli'};
+function spokenCharlie(lang='hr-HR'){const code=String(lang).toLowerCase().split('-')[0];return SPOKEN_CHARLIE[code]||SPOKEN_CHARLIE.hr}
+function prepareSpeechText(text,lang='hr-HR'){
+  let s=String(text);
+  const name=spokenCharlie(lang);
+  s=s.replace(/Charliejeva/g,name+'eva').replace(/Charliejevu/g,name+'evu').replace(/Charliejev/g,name+'jev').replace(/Charlieju/g,name+'ju').replace(/Charliejem/g,name+'jem').replace(/Charlijeva/g,name+'eva').replace(/Charlijevu/g,name+'evu').replace(/Charlijev/g,name+'jev').replace(/Charliju/g,name+'ju').replace(/Charlijem/g,name+'jem').replace(/Charlie/gi,name);
+  return s;
+}
+function speak(text,lang='hr-HR'){
+  lanaSpeaking=true;
+  if(!('speechSynthesis'in window)){lanaSpeaking=false;showSpeech('Na ovom uređaju glasovno čitanje nije dostupno.');return false}
+  const keepListening=listening;
+  if(keepListening){try{recognition?.abort()}catch{}}
+  const u=new SpeechSynthesisUtterance(prepareSpeechText(text,lang));
+  u.lang=lang;u.voice=preferredVoice(lang);u.rate=1;u.pitch=1;
+  speechSynthesis.cancel();speechSynthesis.resume();
+  u.onstart=()=>{$('liveStatus').textContent='● Lana govori'};
+  const resume=()=>{lanaSpeaking=false;$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';if(keepListening)setTimeout(()=>{if(listening&&!recognition)startRecognition()},450)};
+  u.onend=resume;u.onerror=resume;
+  speechSynthesis.speak(u);return true
+}
 function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
-function startRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}if(listening)return;recognition=new SR();recognition.lang='hr-HR';recognition.interimResults=false;recognition.continuous=true;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};recognition.onresult=e=>{const text=e.results?.[e.results.length-1]?.[0]?.transcript?.trim()||'';if(!text||lanaSpeaking)return;showSpeech('Čula sam: '+text);handleCommand(text)};recognition.onerror=(e)=>{if(e?.error==='aborted')return;if(listening){setTimeout(()=>{if(listening)restartRecognition()},600)}else stopRecognition()};recognition.onend=()=>{if(listening){setTimeout(()=>{if(listening)restartRecognition()},350)}else stopRecognition()};recognition.start()} function restartRecognition(){if(!listening)return;try{recognition?.abort()}catch{};recognition=null;setTimeout(()=>{if(listening)startRecognition()},50)}
+function startRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}
+  if(listening)return;
+  recognition=new SR();
+  recognition.lang='hr-HR';
+  recognition.interimResults=false;
+  recognition.continuous=true;
+  recognition.maxAlternatives=3;
+  recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};
+  recognition.onaudiostart=()=>{$('liveStatus').textContent='● Lana sluša · zvuk'};
+  recognition.onspeechstart=()=>{$('liveStatus').textContent='● Lana sluša · čujem'};
+  recognition.onresult=e=>{
+    if(lanaSpeaking)return;
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const text=e.results[i]?.[0]?.transcript?.trim()||'';
+      if(text){showSpeech('Čula sam: '+text);handleCommand(text);break}
+    }
+  };
+  recognition.onerror=e=>{
+    if(e?.error==='aborted')return;
+    if(e?.error==='not-allowed'||e?.error==='service-not-allowed'){
+      listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● uključi dozvolu mikrofona';return
+    }
+    if(listening)setTimeout(()=>{if(listening)restartRecognition()},700);else stopRecognition()
+  };
+  recognition.onend=()=>{if(listening)setTimeout(()=>{if(listening)restartRecognition()},450);else stopRecognition()};
+  try{recognition.start()}catch(e){listening=false;recognition=null;$('shellMicSmall').textContent='ponovi';$('liveStatus').textContent='● mikrofon nije pokrenut'}
+}
+function restartRecognition(){if(!listening)return;try{recognition?.abort()}catch{};recognition=null;setTimeout(()=>{if(listening)startRecognition()},120)}
 function stopRecognition(){listening=false;if(recognition){try{recognition.stop()}catch{}}recognition=null;const b=$('shellMic');if(b)b.classList.remove('active');if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'}
 function openMaps(destination){const clean=destination.trim();if(!clean)return;const q=encodeURIComponent(clean);const nav='google.navigation:q='+q+'&mode=d';const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';let fallback=setTimeout(()=>window.open(web,'_blank'),900);try{window.location.href=nav}catch{clearTimeout(fallback);window.open(web,'_blank')}}
 function getCurrentPosition(){
