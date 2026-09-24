@@ -28,7 +28,8 @@ function speak(text,lang='hr-HR'){lanaSpeaking=true;if(!('speechSynthesis'in win
 function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\\s*/,'').trim(),true));
 $('shellVoiceCore').onclick=async()=>{const started=await startRecognition();if(started)setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
-$('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
+$('shellMic').onclick=async e=>{e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else await startRecognition()};
+$('shellMic').addEventListener('pointerup',async e=>{if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else await startRecognition()}},{passive:false});
 async function startRecognition(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return false}
@@ -72,3 +73,16 @@ renderTariffs();syncPassengerTariff();showBrand();setInterval(showBrand,18200);i
 (function setupDriverWelcome(){if(document.getElementById('driverWelcomeBtn'))return;const btn=document.createElement('button');btn.id='driverWelcomeBtn';btn.type='button';btn.className='driver-welcome-btn';btn.setAttribute('aria-label','Lana dobrodošlica za putnika');btn.innerHTML='<span>👋</span><b>DOBRO DOŠLI</b><small>Lana</small>';const greetings=document.querySelector('.lana-greetings');const lang=document.getElementById('selectedLang');if(greetings&&lang)greetings.insertBefore(btn,lang.nextSibling);else document.body.appendChild(btn);btn.addEventListener('click',()=>{const message='Dobro došli u VAŠ CHARLIE. Ja sam Lana, Charliejeva asistentica i tu sam da vam pomognem da vam vožnja bude što ugodnija. Ako želite svoju glazbu, Wi-Fi, informacije ili vam bilo što zatreba tijekom vožnje, samo mi se obratite. Uživajte u vožnji!';greetInPassengerLanguageText(message)})})();
 (function(){const langBtn=$('selectedLang'),langPanel=$('languagePanel');if(langBtn&&langPanel){langBtn.onclick=e=>{e.preventDefault();e.stopPropagation();langPanel.hidden=false;langPanel.style.display='block';document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};langPanel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);langPanel.hidden=true;langPanel.style.display='none'});const close=langPanel.querySelector('[data-close="languagePanel"]');if(close)close.onclick=e=>{e.preventDefault();e.stopPropagation();langPanel.hidden=true;langPanel.style.display='none'}}})();
 (function(){const langBtn=$('selectedLang'),panel=$('languagePanel');if(langBtn&&panel){const open=()=>{panel.hidden=false;panel.style.display='block';panel.scrollIntoView({block:'nearest'})};langBtn.onclick=e=>{e.preventDefault();e.stopPropagation();open()};panel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);panel.hidden=true;panel.style.display='none'});const close=panel.querySelector('[data-close="languagePanel"]');if(close)close.onclick=e=>{e.preventDefault();e.stopPropagation();panel.hidden=true;panel.style.display='none'}}})();
+// TABLET TOUCH SAFETY: keep the microphone button above the visual stage and respond to touch/pointer input.
+(function installMicTouchGuard(){
+  const mic=$('shellMic');
+  if(!mic)return;
+  mic.type='button';
+  mic.style.pointerEvents='auto';
+  mic.style.touchAction='manipulation';
+  mic.addEventListener('touchend',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    if(listening)stopRecognition();else await startRecognition();
+  },{passive:false});
+})();
