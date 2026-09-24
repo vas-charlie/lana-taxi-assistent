@@ -1,4 +1,18 @@
 const BRAND_MESSAGES=['VAŠ CHARLIE','HVALA NA POVJERENJU','DA NIJE VAS, NE BI BILO NI MENE!!'];
+
+const DEFAULT_TARIFFS=[
+ {name:'Tarifa 1 • Osijek',start:4,perKm:1.5},
+ {name:'Tarifa 2 • Osijek noć/nedjelja • 5–6',start:5,perKm:1.8},
+ {name:'Tarifa 3 • Osijek blagdan',start:4.5,perKm:1.65},
+ {name:'Tarifa 4 • Osijek veliki blagdan',start:5,perKm:2},
+ {name:'Tarifa 5 • Zadar',start:5,perKm:1.8},
+ {name:'Tarifa 6 • Zadar noć',start:6,perKm:2.1}
+];
+function loadTariffs(){try{const saved=JSON.parse(localStorage.getItem('lanaTariffs')||'null');if(Array.isArray(saved)&&saved.length===6)return saved}catch{}return DEFAULT_TARIFFS.map(x=>({...x}))}
+let tariffs=loadTariffs();
+function saveTariffs(){localStorage.setItem('lanaTariffs',JSON.stringify(tariffs))}
+function activeTariff(){const i=Number($('taxiTariff')?.value||0);return tariffs[i]||tariffs[0]}
+function renderTariffs(){const sel=$('taxiTariff');if(!sel)return;sel.innerHTML=tariffs.map((x,i)=>'<option value="'+i+'">'+x.name+'</option>').join('');const i=Number(sel.value||0),t=tariffs[i]||tariffs[0];$('taxiStart').value=t.start;$('taxiRate').value=t.perKm}
 const GREETINGS={
  standard:'Dobro došli! Drago nam je što ste s nama.',
  warm:'Želimo vam ugodnu i lijepu vožnju.',
@@ -69,9 +83,9 @@ async function quoteRide(destination){
  showSpeech('Provjeravam cestovnu udaljenost do '+destination+'.',true);
  try{
    const r=await routeToDestination(destination);
-   const km=r.km.toFixed(1);
-   showSpeech('Do '+r.destination+' ima približno '+km+' kilometara cestom, oko '+Math.round(r.minutes)+' minuta. Za konačnu cijenu još primjenjujem tvoju aktivnu tarifu.',true);
-   return r;
+   const km=r.km.toFixed(1),tariff=activeTariff(),price=tariff.start+r.km*tariff.perKm;
+   showSpeech('Do '+r.destination+' ima približno '+km+' kilometara cestom. Po '+tariff.name+' cijena je oko '+price.toFixed(2)+' eura.',true);
+   return {...r,price,tariff};
  }catch(err){
    const message=err?.code===1
      ? 'Za izračun cijene trebam tvoju lokaciju. Dopusti Lani pristup lokaciji pa pokušaj ponovno.'
@@ -116,6 +130,10 @@ $('shellShift').onclick=()=>toggleShift();
 $('shellTaxi').onclick=()=>{$('taxiPanel').hidden=false};
 $('shellPassenger').onclick=()=>{$('passengerPanel').hidden=false};
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).hidden=true));
-$('taxiCalc').onclick=()=>{const km=Number($('taxiKm').value||0),big=$('taxiPassengers').value==='5–6';if(!km){$('taxiResult').textContent='Unesi kilometražu.';return}const rate=big?1.8:1.5;const start=big?5:4;const price=start+km*rate;$('taxiResult').textContent='Privremeni izračun: '+price.toFixed(2)+' €. Tarife 1–6 ćemo spojiti kad unesemo službeni cjenik.';showSpeech('Privremeni izračun je '+price.toFixed(2)+' eura.',true)};
+$('taxiTariff').addEventListener('change',renderTariffs);
+$('taxiStart').addEventListener('change',()=>{const i=Number($('taxiTariff').value||0);tariffs[i].start=Number($('taxiStart').value||0);saveTariffs()});
+$('taxiRate').addEventListener('change',()=>{const i=Number($('taxiTariff').value||0);tariffs[i].perKm=Number($('taxiRate').value||0);saveTariffs()});
+$('taxiCalc').onclick=()=>{const km=Number($('taxiKm').value||0);if(!km){$('taxiResult').textContent='Unesi kilometražu.';return}const tariff=activeTariff(),price=tariff.start+km*tariff.perKm;$('taxiResult').textContent=tariff.name+': '+tariff.start.toFixed(2)+' € start + '+tariff.perKm.toFixed(2)+' €/km = '+price.toFixed(2)+' €.';showSpeech('Po '+tariff.name+' za '+km.toFixed(1)+' kilometara cijena je oko '+price.toFixed(2)+' eura.',true)};
+renderTariffs();
 showBrand();setInterval(showBrand,18200);
 if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
