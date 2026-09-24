@@ -109,7 +109,7 @@ function handleCommand(raw){
    return showSpeech('Naravno, Čarli. Tu sam. Kako ide čekanje?',true);
  }
  if(t.includes('navigacij')||t.includes('otvori kartu')||t.includes('otvori google maps')){
-   const m=raw.match(/(?:do|prema|za)\\s+(.+)$/i);
+   const m=raw.match(/(?:do|prema|za)\s+(.+)$/i);
    if(m){openMaps(m[1]);return showSpeech('Otvaram navigaciju prema '+m[1]+'.',true);}
    return showSpeech('Reci mi odredište, na primjer: navigacija do Hotela Kolovare.',true);
  }
@@ -118,14 +118,14 @@ function handleCommand(raw){
    return showSpeech('Glazbom mogu pomoći, ali upravljanje aplikacijom za reprodukciju ovisi o uređaju. Reci mi što želiš pustiti.',true);
  }
  if(t.includes('koliko košta')||t.includes('cijena vožnje')||t.includes('koliko je do')){
-   const m=raw.match(/(?:odavde\\s+)?(?:do|za|prema)\\s+(.+?)(?:\\?|$)/i);
+   const m=raw.match(/(?:odavde\s+)?(?:do|za|prema)\s+(.+?)(?:\?|$)/i);
    const dest=m?.[1]?.trim();
    if(dest){quoteRide(dest);return}
    return showSpeech('Reci mi odredište, na primjer: koliko košta odavde do Hotela Kolovare.',true);
  }
  return speak('Razumjela sam. Reci mi što želiš napraviti, na primjer navigacija, glazba, razgovor ili izračun vožnje.');
 }
-function toggleShift(forceStart=false){shiftActive=forceStart?!shiftActive:!shiftActive;$('shellShift').classList.toggle('active',shiftActive);$('shellShiftSmall').textContent=shiftActive?'aktivna':'nema smjene';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';showSpeech(shiftActive?'Smjena je započela, Čarli.':'Smjena je završena, Čarli.',true)}
+function toggleShift(forceStart=false){shiftActive=forceStart?true:!shiftActive;$('shellShift').classList.toggle('active',shiftActive);$('shellShiftSmall').textContent=shiftActive?'aktivna':'nema smjene';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';showSpeech(shiftActive?'Smjena je započela, Čarli.':'Smjena je završena, Čarli.',true)}
 $('shellShift').onclick=()=>toggleShift();
 $('shellTaxi').onclick=()=>{$('taxiPanel').hidden=false};
 $('shellPassenger').onclick=()=>{$('passengerPanel').hidden=false};
