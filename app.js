@@ -173,3 +173,20 @@ renderTariffs();
 syncPassengerTariff();
 showBrand();setInterval(showBrand,18200);
 if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
+
+
+/* DRIVER WELCOME BUTTON • VAŠ CHARLIE */
+(function setupDriverWelcome(){
+  if(document.getElementById('driverWelcomeBtn')) return;
+  const btn=document.createElement('button');
+  btn.id='driverWelcomeBtn';
+  btn.type='button';
+  btn.className='driver-welcome-btn';
+  btn.setAttribute('aria-label','Lana dobrodošlica za putnika');
+  btn.innerHTML='<span>👋</span><b>DOBRO DOŠLI</b><small>Lana</small>';
+  document.body.appendChild(btn);
+  btn.addEventListener('click',()=>{
+    const message='Dobro došli u VAŠ CHARLIE. Ja sam Lana, Charliejeva asistentica i tu sam da vam pomognem da vam vožnja bude što ugodnija. Ako želite svoju glazbu, Wi-Fi, informacije ili vam bilo što zatreba tijekom vožnje, samo mi se obratite. Uživajte u vožnji!';
+    showSpeech(message,true);
+  });
+})();
