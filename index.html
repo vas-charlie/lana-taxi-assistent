@@ -19,7 +19,7 @@
   </main>
 
   <section class="lana-greetings" aria-label="Brzi pozdravi putnika">
-    <div class="lana-greetings-title">👥 PUTNIK</div>
+    <div class="lana-greetings-title">👥 PUTNIK</div><button class="lana-greet-btn language-btn" id="selectedLang">🌐 English</button>
     <button class="lana-greet-btn primary" data-greet="standard"><strong>👋</strong>Pozdravi</button>
     <button class="lana-greet-btn" data-greet="warm"><strong>🙂</strong>Topli pozdrav</button>
     <button class="lana-greet-btn" data-greet="returning"><strong>🔁</strong>Stalni klijent</button>
@@ -46,9 +46,9 @@
     <div class="panel-result" id="taxiResult">Cijena se računa prema tvojoj tarifi kada je uneseš.</div>
   </section>
 
-  <section class="lana-panel" id="passengerPanel" hidden>
+  <section class="lana-panel" id="languagePanel" hidden><div class="panel-head"><strong>🌐 Jezik putnika</strong><button data-close="languagePanel">✕</button></div><p>Jezik za pozdrave i live prijevod.</p><div class="language-grid"><button data-lang="en">🇬🇧 English</button><button data-lang="de">🇩🇪 Deutsch</button><button data-lang="it">🇮🇹 Italiano</button><button data-lang="fr">🇫🇷 Français</button><button data-lang="es">🇪🇸 Español</button><button data-lang="ru">🇷🇺 Русский</button><button data-lang="cs">🇨🇿 Čeština</button><button data-lang="nl">🇳🇱 Nederlands</button><button data-lang="pl">🇵🇱 Polski</button><button data-lang="hu">🇭🇺 Magyar</button><button data-lang="sl">🇸🇮 Slovenščina</button><button data-lang="hr">🇭🇷 Hrvatski</button></div></section><section class="lana-panel" id="passengerPanel" hidden>
     <div class="panel-head"><strong>🧑‍💼 Putnik</strong><button data-close="passengerPanel">✕</button></div>
-    <p>Brze poruke koje Lana može <strong>izgovoriti naglas</strong>.</p>
+    <p>Brze poruke koje Lana može <strong>izgovoriti naglas</strong>.</p><div class="translate-controls"><button id="liveTranslateBtn">🔄 Live prijevod</button><button id="translateDirection">Čarli → putnik</button></div>
     <div class="passenger-grid">
       <button data-say="👋 Dobro došli! Drago nam je što ste s nama.">👋 Pozdrav</button>
       <button data-say="😊 Želimo vam ugodno putovanje.">😊 Ugodno putovanje</button>
