@@ -19,7 +19,7 @@ const LANGUAGES={hr:{name:'Hrvatski',speech:'hr-HR',code:'hr'},en:{name:'English
 const GREETINGS={standard:'Dobro došli! Drago nam je što ste s nama.',warm:'Želimo vam ugodnu i lijepu vožnju.',returning:'Drago nam je ponovno vas voziti.',exit:'Hvala na ukazanom povjerenju. Doviđenja i sretan put!',luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'};
 let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false, micCheckInProgress=false;
 const $=id=>document.getElementById(id);
-function showBrand(){const box=$('brandMessages');if(!box)return;const old=box.querySelector('.brandMsg');if(old){old.classList.add('leaving');setTimeout(()=>old.remove(),4200)}const el=document.createElement('div');el.className='brandMsg brandMsg-'+brandIndex;const text=BRAND_MESSAGES[brandIndex];[...text].forEach((ch,i)=>{const span=document.createElement('span');span.className='brandLetter';span.style.setProperty('--i',i);span.textContent=ch===' '?'\\u00A0':ch;el.appendChild(span)});box.appendChild(el);brandIndex=(brandIndex+1)%BRAND_MESSAGES.length}
+function showBrand(){const box=$('brandMessages');if(!box)return;const old=box.querySelector('.brandMsg');if(old){old.classList.add('leaving');setTimeout(()=>old.remove(),4200)}const el=document.createElement('div');el.className='brandMsg brandMsg-'+brandIndex;el.textContent=BRAND_MESSAGES[brandIndex];box.appendChild(el);brandIndex=(brandIndex+1)%BRAND_MESSAGES.length}
 function showSpeech(text,say=false){const box=$('lanaSpeech');if(!box)return;box.textContent=text;box.classList.add('show');clearTimeout(showSpeech.timer);showSpeech.timer=setTimeout(()=>box.classList.remove('show'),say?9000:6000);if(say)speak(text)}
 const SPOKEN_CHARLIE={hr:'Čarli',en:'Charlie',de:'Tschärli',it:'Ciarli',fr:'Tcharli',es:'Chárli',ru:'Чарли',cs:'Čárlí',nl:'Tsjarlie',pl:'Czarli',hu:'Csárli',sl:'Čarli'};
 function spokenCharlie(lang='hr-HR'){const code=String(lang).toLowerCase().split('-')[0];return SPOKEN_CHARLIE[code]||SPOKEN_CHARLIE.hr}
@@ -28,8 +28,8 @@ function speak(text,lang='hr-HR'){lanaSpeaking=true;if(!('speechSynthesis'in win
 function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=async()=>{const started=await startRecognition();if(started)setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
-$('shellMic').onclick=async e=>{e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else await startRecognition()};
-$('shellMic').addEventListener('pointerup',async e=>{if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else await startRecognition()}},{passive:false});
+const micButton=$('shellMic');
+if(micButton){micButton.type='button';micButton.addEventListener('pointerup',async e=>{e.preventDefault();e.stopPropagation();if(listening)stopRecognition();else await startRecognition()},{passive:false});}
 async function startRecognition(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return false}
@@ -73,16 +73,4 @@ renderTariffs();syncPassengerTariff();showBrand();setInterval(showBrand,18200);i
 (function setupDriverWelcome(){if(document.getElementById('driverWelcomeBtn'))return;const btn=document.createElement('button');btn.id='driverWelcomeBtn';btn.type='button';btn.className='driver-welcome-btn';btn.setAttribute('aria-label','Lana dobrodošlica za putnika');btn.innerHTML='<span>👋</span><b>DOBRO DOŠLI</b><small>Lana</small>';const greetings=document.querySelector('.lana-greetings');const lang=document.getElementById('selectedLang');if(greetings&&lang)greetings.insertBefore(btn,lang.nextSibling);else document.body.appendChild(btn);btn.addEventListener('click',()=>{const message='Dobro došli u VAŠ CHARLIE. Ja sam Lana, Charliejeva asistentica i tu sam da vam pomognem da vam vožnja bude što ugodnija. Ako želite svoju glazbu, Wi-Fi, informacije ili vam bilo što zatreba tijekom vožnje, samo mi se obratite. Uživajte u vožnji!';greetInPassengerLanguageText(message)})})();
 (function(){const langBtn=$('selectedLang'),langPanel=$('languagePanel');if(langBtn&&langPanel){langBtn.onclick=e=>{e.preventDefault();e.stopPropagation();langPanel.hidden=false;langPanel.style.display='block';document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};langPanel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);langPanel.hidden=true;langPanel.style.display='none'});const close=langPanel.querySelector('[data-close="languagePanel"]');if(close)close.onclick=e=>{e.preventDefault();e.stopPropagation();langPanel.hidden=true;langPanel.style.display='none'}}})();
 (function(){const langBtn=$('selectedLang'),panel=$('languagePanel');if(langBtn&&panel){const open=()=>{panel.hidden=false;panel.style.display='block';panel.scrollIntoView({block:'nearest'})};langBtn.onclick=e=>{e.preventDefault();e.stopPropagation();open()};panel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);panel.hidden=true;panel.style.display='none'});const close=panel.querySelector('[data-close="languagePanel"]');if(close)close.onclick=e=>{e.preventDefault();e.stopPropagation();panel.hidden=true;panel.style.display='none'}}})();
-// TABLET TOUCH SAFETY: keep the microphone button above the visual stage and respond to touch/pointer input.
-(function installMicTouchGuard(){
-  const mic=$('shellMic');
-  if(!mic)return;
-  mic.type='button';
-  mic.style.pointerEvents='auto';
-  mic.style.touchAction='manipulation';
-  mic.addEventListener('touchend',async e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    if(listening)stopRecognition();else await startRecognition();
-  },{passive:false});
-})();
+// Tablet touch is handled by the single pointerup listener above. No duplicate touchend/click handlers.
