@@ -40,16 +40,18 @@ async function startRecognition(){
  recognition=new SR();
  recognition.lang='hr-HR';
  recognition.interimResults=true;
- recognition.continuous=false;
- recognition.maxAlternatives=3;
+ recognition.continuous=true;
+ recognition.maxAlternatives=5;
+ recognition.onspeechend=()=>{$('liveStatus').textContent='● Lana čula · obrađujem'};
+ recognition.onend=()=>{if(!listening){recognition=null;$('shellMic').classList.remove('active');if($('shellMicSmall').textContent==='slušam…')$('shellMicSmall').textContent='ponovi';return}setTimeout(()=>{if(listening)restartRecognition()},250)};
  recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša · čekam glas'};
  recognition.onaudiostart=()=>{$('liveStatus').textContent='● Lana sluša · zvuk'};
  recognition.onsoundstart=()=>{$('liveStatus').textContent='● Lana sluša · zvuk detektiran'};
  recognition.onspeechstart=()=>{$('liveStatus').textContent='● Lana sluša · čujem'};
  recognition.onresult=e=>{let finalText='';let interimText='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];const t=r?.[0]?.transcript?.trim()||'';if(r.isFinal)finalText+=t+' ';else interimText+=t+' ';}const shown=(finalText||interimText).trim();if(shown){showSpeech('Čula sam: '+shown);$('liveStatus').textContent=finalText?'● Lana čula · obrađujem':'● Lana sluša · '+shown}if(finalText.trim()){listening=false;handleCommand(finalText.trim())}};
  recognition.onnomatch=()=>{$('liveStatus').textContent='● nisam razumjela';listening=false};
- recognition.onerror=e=>{const err=e?.error||'unknown';if(err==='aborted')return;if(err==='not-allowed'||err==='service-not-allowed'){listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● mikrofon nije dopušten';return}if(err==='network'){$('liveStatus').textContent='● glasovna usluga nije dostupna';listening=false;$('shellMic').classList.remove('active');return}if(err==='no-speech'){$('liveStatus').textContent='● nisam čula govor';listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='ponovi';return}$('liveStatus').textContent='● greška mikrofona: '+err;listening=false;$('shellMic').classList.remove('active')};
- recognition.onend=()=>{if(!listening){recognition=null;$('shellMic').classList.remove('active');if($('shellMicSmall').textContent==='slušam…')$('shellMicSmall').textContent='ponovi';return}setTimeout(()=>{if(listening)restartRecognition()},350)};
+ recognition.onerror=e=>{const err=e?.error||'unknown';if(err==='aborted')return;if(err==='not-allowed'||err==='service-not-allowed'){listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● mikrofon nije dopušten';return}if(err==='network'){$('liveStatus').textContent='● glasovna usluga nije dostupna';listening=false;$('shellMic').classList.remove('active');return}if(err==='no-speech'){$('liveStatus').textContent='● Lana još sluša · reci nešto';$('shellMicSmall').textContent='slušam…';return}$('liveStatus').textContent='● greška mikrofona: '+err;listening=false;$('shellMic').classList.remove('active')};
+
  try{recognition.start();return true}catch(e){listening=false;recognition=null;$('shellMicSmall').textContent='ponovi';$('liveStatus').textContent='● mikrofon nije pokrenut';return false}
 }
 function restartRecognition(){if(!listening)return;try{recognition?.abort()}catch{}recognition=null;setTimeout(()=>{if(listening)startRecognition()},120)}
