@@ -52,7 +52,18 @@ async function startRecognition(){
  recognition.onnomatch=()=>{$('liveStatus').textContent='● nisam razumjela';listening=false};
  recognition.onerror=e=>{const err=e?.error||'unknown';if(err==='aborted')return;if(err==='not-allowed'||err==='service-not-allowed'){listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● mikrofon nije dopušten';return}if(err==='network'){$('liveStatus').textContent='● glasovna usluga nije dostupna';listening=false;$('shellMic').classList.remove('active');return}if(err==='no-speech'){$('liveStatus').textContent='● Lana još sluša · reci nešto';$('shellMicSmall').textContent='slušam…';return}$('liveStatus').textContent='● greška mikrofona: '+err;listening=false;$('shellMic').classList.remove('active')};
 
- try{recognition.start();return true}catch(e){listening=false;recognition=null;$('shellMicSmall').textContent='ponovi';$('liveStatus').textContent='● mikrofon nije pokrenut';return false}
+ try{
+   recognition.start();
+   micCheckInProgress=false;
+   return true;
+ }catch(e){
+   micCheckInProgress=false;
+   listening=false;
+   recognition=null;
+   $('shellMicSmall').textContent='ponovi';
+   $('liveStatus').textContent='● mikrofon nije pokrenut';
+   return false;
+ }
 }
 function restartRecognition(){if(!listening)return;try{recognition?.abort()}catch{}recognition=null;setTimeout(()=>{if(listening)startRecognition()},120)}
 function stopRecognition(){listening=false;if(recognition){try{recognition.stop()}catch{}}recognition=null;const b=$('shellMic');if(b)b.classList.remove('active');if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'}
