@@ -53,13 +53,13 @@ document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true);startRecognition()};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
-function startRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}if(listening)return;recognition=new SR();recognition.lang='hr-HR';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';showSpeech('Čula sam: '+text);handleCommand(text)};recognition.onerror=()=>{showSpeech('Nisam uspjela čuti naredbu.');stopRecognition()};recognition.onend=()=>{if(listening){setTimeout(()=>{try{recognition.start()}catch{}},250)}else stopRecognition()};recognition.start()}
+function startRecognition(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}if(listening)return;recognition=new SR();recognition.lang='hr-HR';recognition.interimResults=false;recognition.continuous=true;recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';showSpeech('Čula sam: '+text);handleCommand(text)};recognition.onerror=()=>{showSpeech('Nisam uspjela čuti naredbu.');stopRecognition()};recognition.onend=()=>{if(listening){setTimeout(()=>{try{recognition.start()}catch{}} ,300)}else stopRecognition()};recognition.start()}
 function stopRecognition(){listening=false;if(recognition){try{recognition.stop()}catch{}}recognition=null;const b=$('shellMic');if(b)b.classList.remove('active');if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'}
 function openMaps(destination){
  const clean=destination.trim(); if(!clean)return;
  const q=encodeURIComponent(clean);
- let fallback=setTimeout(()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving','_blank'),1200);
- try{window.location.href='google.navigation:q='+q+'&mode=d';}catch{clearTimeout(fallback);window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving','_blank')}
+ let fallback=setTimeout(()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate','_blank'),1200);
+ try{window.location.href='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';}catch{clearTimeout(fallback);window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving','_blank')}
 }
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
@@ -201,5 +201,16 @@ if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=()=>{};
    langPanel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);});
    const close=langPanel.querySelector('[data-close="languagePanel"]');
    if(close)close.onclick=(e)=>{e.preventDefault();e.stopPropagation();langPanel.hidden=true;langPanel.style.display='none';};
+ }
+})();
+
+/* FIX PASS 2 */
+(function(){
+ const langBtn=$('selectedLang'), panel=$('languagePanel');
+ if(langBtn&&panel){
+   const open=()=>{panel.hidden=false;panel.style.display='block';panel.scrollIntoView({block:'nearest'});};
+   langBtn.onclick=(e)=>{e.preventDefault();e.stopPropagation();open();};
+   panel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();setPassengerLanguage(b.dataset.lang);panel.hidden=true;panel.style.display='none';});
+   const close=panel.querySelector('[data-close="languagePanel"]'); if(close)close.onclick=(e)=>{e.preventDefault();e.stopPropagation();panel.hidden=true;panel.style.display='none';};
  }
 })();
