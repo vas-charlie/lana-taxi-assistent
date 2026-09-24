@@ -39,6 +39,8 @@
     <div class="panel-head"><strong>🚕 Brzi izračun vožnje</strong><button data-close="taxiPanel">✕</button></div>
     <label>Polazište<input id="taxiFrom" placeholder="npr. Osijek"></label>
     <label>Odredište<input id="taxiTo" placeholder="npr. Zračna luka"></label>
+    <label>Tarifa<select id="taxiTariff"></select></label>
+    <div class="panel-grid"><label>Početna cijena (€)<input id="taxiStart" type="number" min="0" step="0.01"></label><label>Cijena po km (€)<input id="taxiRate" type="number" min="0" step="0.01"></label></div>
     <div class="panel-grid"><label>Putnici<select id="taxiPassengers"><option>1–4</option><option>5–6</option></select></label><label>Km<input id="taxiKm" type="number" min="0" step="0.1" placeholder="0"></label></div>
     <div class="panel-actions"><button id="taxiCalc">Izračunaj</button><button class="secondary" data-close="taxiPanel">Zatvori</button></div>
     <div class="panel-result" id="taxiResult">Cijena se računa prema tvojoj tarifi kada je uneseš.</div>
