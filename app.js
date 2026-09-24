@@ -41,6 +41,45 @@ function openMaps(destination){
  const q=encodeURIComponent(destination.trim());
  window.open('https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving','_blank');
 }
+function getCurrentPosition(){
+ return new Promise((resolve,reject)=>{
+   if(!navigator.geolocation)return reject(new Error('geolocation-unavailable'));
+   navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+ });
+}
+async function routeToDestination(destination){
+ const clean=destination.replace(/[?!.]+$/,'').trim();
+ if(!clean)throw new Error('destination-empty');
+ const pos=await getCurrentPosition();
+ const {latitude,longitude}=pos.coords;
+ const geoUrl='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=hr&q='+encodeURIComponent(clean);
+ const geoRes=await fetch(geoUrl,{headers:{Accept:'application/json'}});
+ if(!geoRes.ok)throw new Error('geocode-failed');
+ const places=await geoRes.json();
+ if(!places.length)throw new Error('destination-not-found');
+ const destLat=Number(places[0].lat),destLon=Number(places[0].lon);
+ const routeUrl='https://router.project-osrm.org/route/v1/driving/'+longitude+','+latitude+';'+destLon+','+destLat+'?overview=false';
+ const routeRes=await fetch(routeUrl);
+ if(!routeRes.ok)throw new Error('route-failed');
+ const route=await routeRes.json();
+ if(route.code!=='Ok'||!route.routes?.length)throw new Error('route-not-found');
+ return {destination:clean,km:route.routes[0].distance/1000,minutes:route.routes[0].duration/60};
+}
+async function quoteRide(destination){
+ showSpeech('Provjeravam cestovnu udaljenost do '+destination+'.',true);
+ try{
+   const r=await routeToDestination(destination);
+   const km=r.km.toFixed(1);
+   showSpeech('Do '+r.destination+' ima približno '+km+' kilometara cestom, oko '+Math.round(r.minutes)+' minuta. Za konačnu cijenu još primjenjujem tvoju aktivnu tarifu.',true);
+   return r;
+ }catch(err){
+   const message=err?.code===1
+     ? 'Za izračun cijene trebam tvoju lokaciju. Dopusti Lani pristup lokaciji pa pokušaj ponovno.'
+     : 'Nisam uspjela dohvatiti cestovnu udaljenost. Pokušaj ponovno ili otvori navigaciju.';
+   showSpeech(message,true);
+   return null;
+ }
+}
 function handleCommand(raw){
  const t=raw.toLowerCase().trim();
  if(!t)return;
@@ -64,10 +103,10 @@ function handleCommand(raw){
    if(t.includes('pauz')||t.includes('zaustav')){showSpeech('U redu, pauziraj glazbu na uređaju.');return}
    return showSpeech('Glazbom mogu pomoći, ali upravljanje aplikacijom za reprodukciju ovisi o uređaju. Reci mi što želiš pustiti.',true);
  }
- if(t.includes('koliko košta')||t.includes('koliko košta')||t.includes('cijena vožnje')){
-   const m=raw.match(/(?:do|za|prema)\\s+(.+?)(?:\\?|$)/i);
+ if(t.includes('koliko košta')||t.includes('cijena vožnje')||t.includes('koliko je do')){
+   const m=raw.match(/(?:odavde\\s+)?(?:do|za|prema)\\s+(.+?)(?:\\?|$)/i);
    const dest=m?.[1]?.trim();
-   if(dest){showSpeech('Razumjela sam. Za '+dest+' trebam cestovnu udaljenost i tvoju aktivnu tarifu da izračunam točnu cijenu.',true);return}
+   if(dest){quoteRide(dest);return}
    return showSpeech('Reci mi odredište, na primjer: koliko košta odavde do Hotela Kolovare.',true);
  }
  return speak('Razumjela sam. Reci mi što želiš napraviti, na primjer navigacija, glazba, razgovor ili izračun vožnje.');
