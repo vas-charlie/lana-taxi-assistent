@@ -25,7 +25,7 @@ const GREETINGS={
  exit:'Hvala na ukazanom povjerenju. Doviđenja i sretan put!',
  luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'
 };
-let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false;
+let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false, micCheckInProgress=false;
 const $=id=>document.getElementById(id);
 function showBrand(){
  const box=$('brandMessages');if(!box)return;
@@ -59,7 +59,6 @@ function speak(text,lang='hr-HR'){
   lanaSpeaking=true;
   if(!('speechSynthesis'in window)){lanaSpeaking=false;showSpeech('Na ovom uređaju glasovno čitanje nije dostupno.');return false}
   const keepListening=listening;
-  if(keepListening){try{recognition?.abort()}catch{}}
   const u=new SpeechSynthesisUtterance(prepareSpeechText(text,lang));
   u.lang=lang;u.voice=preferredVoice(lang);u.rate=1;u.pitch=1;
   speechSynthesis.cancel();speechSynthesis.resume();
@@ -73,9 +72,25 @@ document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
-function startRecognition(){
+async function startRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}
+  if(listening||micCheckInProgress)return;
+  micCheckInProgress=true;
+  try{
+    if(navigator.mediaDevices?.getUserMedia){
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(track=>track.stop());
+    }
+  }catch(e){
+    micCheckInProgress=false;
+    $('shellMic').classList.remove('active');
+    $('shellMicSmall').textContent='dozvola mikrofona';
+    $('liveStatus').textContent='● mikrofon nije dopušten';
+    showSpeech('Čarli, mikrofon nije dopušten. Dodirni ikonu mikrofona i dopusti pristup mikrofonu.');
+    return;
+  }
+  micCheckInProgress=false;
   if(listening)return;
   recognition=new SR();
   recognition.lang='hr-HR';
