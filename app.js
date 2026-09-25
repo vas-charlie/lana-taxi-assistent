@@ -25,7 +25,7 @@ const GREETINGS={
  exit:'Hvala na ukazanom povjerenju. Doviđenja i sretan put!',
  luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'
 };
-let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false;
+let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false, recognitionRun=0;
 const $=id=>document.getElementById(id);
 function showBrand(){
  const box=$('brandMessages');if(!box)return;
@@ -59,13 +59,25 @@ function preferredVoice(lang='hr-HR'){const vs=speechSynthesis.getVoices?.()||[]
 function speak(text,lang='hr-HR'){
   lanaSpeaking=true;
   if(!('speechSynthesis'in window)){lanaSpeaking=false;showSpeech('Na ovom uređaju glasovno čitanje nije dostupno.');return false}
-  const keepListening=listening;
-  if(keepListening){try{recognition?.abort()}catch{}}
+  // Dok Lana govori, privremeno zaustavljamo samo jednu SpeechRecognition sesiju.
+  // Gumb/mikrofon ostaje uključen, a slušanje se automatski nastavlja nakon govora.
+  const resumeListening=listening;
+  if(resumeListening){
+    listening=false;
+    try{recognition?.abort()}catch{}
+    recognition=null;
+  }
   const u=new SpeechSynthesisUtterance(prepareSpeechText(text,lang));
   u.lang=lang;u.voice=preferredVoice(lang);u.rate=1;u.pitch=1;
   speechSynthesis.cancel();speechSynthesis.resume();
   u.onstart=()=>{$('liveStatus').textContent='● Lana govori'};
-  const resume=()=>{lanaSpeaking=false;$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';if(keepListening)setTimeout(()=>{if(listening&&!recognition)startRecognition()},450)};
+  const resume=()=>{
+    lanaSpeaking=false;
+    $('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';
+    if(resumeListening){
+      setTimeout(()=>{if(!lanaSpeaking){listening=true;startRecognition()}},350);
+    }
+  };
   u.onend=resume;u.onerror=resume;
   speechSynthesis.speak(u);return true
 }
@@ -77,34 +89,87 @@ $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition(
 function startRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}
-  if(listening)return;
-  recognition=new SR();
-  recognition.lang='hr-HR';
-  recognition.interimResults=false;
-  recognition.continuous=true;
-  recognition.maxAlternatives=3;
-  recognition.onstart=()=>{listening=true;$('shellMic').classList.add('active');$('shellMicSmall').textContent='slušam…';$('liveStatus').textContent='● Lana sluša'};
-  recognition.onaudiostart=()=>{$('liveStatus').textContent='● Lana sluša · zvuk'};
-  recognition.onspeechstart=()=>{$('liveStatus').textContent='● Lana sluša · čujem'};
-  recognition.onresult=e=>{
-    if(lanaSpeaking)return;
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      const text=e.results[i]?.[0]?.transcript?.trim()||'';
-      if(text){showSpeech('Čula sam: '+text);handleCommand(text);break}
+  if(!listening||lanaSpeaking)return;
+  const run=++recognitionRun;
+  const rec=new SR();
+  recognition=rec;
+  rec.lang='hr-HR';
+  rec.interimResults=false;
+  // Android Chrome je pouzdaniji kada se pojedinačna sesija završi nakon rezultata,
+  // pa je odmah pokrenemo ponovno. Korisniku mikrofon ostaje uključen.
+  rec.continuous=false;
+  rec.maxAlternatives=3;
+  rec.onstart=()=>{
+    if(run!==recognitionRun)return;
+    listening=true;
+    $('shellMic').classList.add('active');
+    $('shellMicSmall').textContent='slušam…';
+    $('liveStatus').textContent='● Lana sluša';
+  };
+  rec.onaudiostart=()=>{
+    if(run===recognitionRun)$('liveStatus').textContent='● Lana sluša · zvuk';
+  };
+  rec.onspeechstart=()=>{
+    if(run===recognitionRun)$('liveStatus').textContent='● Lana sluša · čujem';
+  };
+  rec.onresult=e=>{
+    if(run!==recognitionRun||lanaSpeaking)return;
+    const result=e.results?.[e.resultIndex]?.[0];
+    const text=result?.transcript?.trim()||'';
+    if(text){
+      showSpeech('Čula sam: '+text);
+      handleCommand(text);
     }
   };
-  recognition.onerror=e=>{
-    if(e?.error==='aborted')return;
+  rec.onerror=e=>{
+    if(run!==recognitionRun)return;
     if(e?.error==='not-allowed'||e?.error==='service-not-allowed'){
-      listening=false;$('shellMic').classList.remove('active');$('shellMicSmall').textContent='dozvola mikrofona';$('liveStatus').textContent='● uključi dozvolu mikrofona';return
+      listening=false;
+      $('shellMic').classList.remove('active');
+      $('shellMicSmall').textContent='dozvola mikrofona';
+      $('liveStatus').textContent='● uključi dozvolu mikrofona';
+      return;
     }
-    if(listening)setTimeout(()=>{if(listening)restartRecognition()},700);else stopRecognition()
+    if(e?.error==='aborted')return;
+    // no-speech, audio-capture i mrežne greške ne gase korisnikov mikrofon.
+    if(listening&&!lanaSpeaking){
+      recognition=null;
+      setTimeout(()=>{if(listening&&!lanaSpeaking)startRecognition()},350);
+    }
   };
-  recognition.onend=()=>{if(listening)setTimeout(()=>{if(listening)restartRecognition()},450);else stopRecognition()};
-  try{recognition.start()}catch(e){listening=false;recognition=null;$('shellMicSmall').textContent='ponovi';$('liveStatus').textContent='● mikrofon nije pokrenut'}
+  rec.onend=()=>{
+    if(run!==recognitionRun)return;
+    if(recognition===rec)recognition=null;
+    if(listening&&!lanaSpeaking){
+      setTimeout(()=>{if(listening&&!lanaSpeaking)startRecognition()},220);
+    }
+  };
+  try{
+    rec.start();
+  }catch(e){
+    if(run!==recognitionRun)return;
+    recognition=null;
+    if(listening&&!lanaSpeaking){
+      setTimeout(()=>{if(listening&&!lanaSpeaking)startRecognition()},500);
+    }
+  }
 }
-function restartRecognition(){if(!listening)return;try{recognition?.abort()}catch{};recognition=null;setTimeout(()=>{if(listening)startRecognition()},120)}
-function stopRecognition(){listening=false;if(recognition){try{recognition.stop()}catch{}}recognition=null;const b=$('shellMic');if(b)b.classList.remove('active');if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna'}
+function restartRecognition(){
+  if(!listening)return;
+  recognitionRun++;
+  try{recognition?.abort()}catch{}
+  recognition=null;
+  setTimeout(()=>{if(listening&&!lanaSpeaking)startRecognition()},120);
+}
+function stopRecognition(){
+  listening=false;
+  recognitionRun++;
+  if(recognition){try{recognition.abort()}catch{}}
+  recognition=null;
+  const b=$('shellMic');if(b)b.classList.remove('active');
+  if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';
+  $('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';
+}
 function openMaps(destination){const clean=destination.trim();if(!clean)return;const q=encodeURIComponent(clean);const nav='google.navigation:q='+q+'&mode=d';const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';let fallback=setTimeout(()=>window.open(web,'_blank'),900);try{window.location.href=nav}catch{clearTimeout(fallback);window.open(web,'_blank')}}
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
