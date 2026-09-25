@@ -86,7 +86,21 @@ document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
+window.__lanaNativeSpeech=function(text){
+  if(!text||lanaSpeaking)return;
+  showSpeech('Čula sam: '+text);
+  handleCommand(text);
+};
 function startRecognition(){
+  if(lanaSpeaking)return;
+  if(typeof window.AndroidLana!=='undefined' && typeof window.AndroidLana.startListening==='function'){
+    listening=true;
+    $('shellMic').classList.add('active');
+    $('shellMicSmall').textContent='slušam…';
+    $('liveStatus').textContent='● Lana sluša';
+    window.AndroidLana.startListening();
+    return;
+  }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}
   if(lanaSpeaking)return;
@@ -166,6 +180,9 @@ function restartRecognition(){
 function stopRecognition(){
   listening=false;
   recognitionRun++;
+  if(typeof window.AndroidLana!=='undefined' && typeof window.AndroidLana.stopListening==='function'){
+    try{window.AndroidLana.stopListening()}catch{}
+  }
   if(recognition){try{recognition.abort()}catch{}}
   recognition=null;
   const b=$('shellMic');if(b)b.classList.remove('active');
@@ -197,17 +214,14 @@ function normalizeNavigationDestination(raw){
 }
 function openMaps(destination){
  const clean=destination.trim();if(!clean)return;
- const q=encodeURIComponent(clean);
- // Androidov izravni Google Maps navigation intent.
- // Namjerno NEMA automatskog web-fallbacka: fallback bi nakon ~1.8 s
- // preuzeo kontrolu i vratio Maps na samo prikaz rute.
- const direct='google.navigation:q='+q+'&mode=d';
- try{
-   window.location.href=direct;
- }catch{
-   // Ako browser odbije URI, ne preusmjeravamo automatski na drugi način
-   // jer bi to ponovno moglo prekinuti aktivnu navigaciju.
+ // Native Android LANA pokreće Maps izravno, bez Chrome potvrde.
+ if(typeof window.AndroidLana!=='undefined' && typeof window.AndroidLana.navigate==='function'){
+   window.AndroidLana.navigate(clean);
+   return;
  }
+ const q=encodeURIComponent(clean);
+ const direct='google.navigation:q='+q+'&mode=d';
+ try{window.location.href=direct}catch{}
 }
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
