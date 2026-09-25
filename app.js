@@ -21,7 +21,18 @@ async function greetInPassengerLanguageText(source){if(passengerLang==='hr')retu
 const GREETINGS={
  standard:'Dobro došli! Drago nam je što ste s nama. Želimo vam ugodnu i lijepu vožnju.',
  warm:'Želimo vam ugodnu i lijepu vožnju.',
- returning:'Drago nam je ponovno vas voziti.',
+ returning:[
+  'Drago nam je ponovno vas vidjeti. Dobro došli natrag!',
+  'Lijepo vas je ponovno vidjeti. Nadamo se da ste zadovoljni kao i uvijek.',
+  'Dobro nam došli ponovno. Uživajte u vožnji, mi ćemo se pobrinuti za ostalo.',
+  'Uvijek nam je drago kada nam se ponovno vratite. Želimo vam ugodnu vožnju!',
+  'Dobro došli natrag! Hvala vam što nam ponovno ukazujete svoje povjerenje.',
+  'Lijepo je ponovno vas vidjeti. Želimo vam mirnu i ugodnu vožnju.',
+  'Dobro došli ponovno! Drago nam je što ste opet s nama.',
+  'Hvala vam što nam se ponovno vraćate. Uživajte, a mi ćemo se pobrinuti za put.',
+  'Ponovno ste s nama, i to nam je posebno drago. Želimo vam ugodnu vožnju!',
+  'Dobro nam došli natrag. Hvala na povjerenju i ugodno putovanje!'
+],
  exit:'Hvala na ukazanom povjerenju. Doviđenja i sretan put!',
  luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'
 };
@@ -81,7 +92,7 @@ function speak(text,lang='hr-HR'){
   u.onend=resume;u.onerror=resume;
   speechSynthesis.speak(u);return true
 }
-function greet(key){const t=GREETINGS[key];if(!t)return;showSpeech(t,true)}
+function greet(key){let t=GREETINGS[key];if(!t)return;if(Array.isArray(t))t=t[Math.floor(Math.random()*t.length)];showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
 $('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
