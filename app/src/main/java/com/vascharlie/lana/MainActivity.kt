@@ -79,14 +79,14 @@ class MainActivity : Activity() {
             override fun onEndOfSpeech() {}
             override fun onPartialResults(b: Bundle?) {}
             override fun onEvent(t: Int, p: Bundle?) {}
-            override fun onError(e: Int) { if (listening && e != SpeechRecognizer.ERROR_CLIENT) startNativeListening() }
+            override fun onError(e: Int) { if (listening && e != SpeechRecognizer.ERROR_CLIENT) continueNativeListening() }
             override fun onResults(b: Bundle?) {
                 val result = b?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
                 if (result.isNotBlank()) {
                     val js = org.json.JSONObject.quote(result)
                     webView.evaluateJavascript("window.__lanaNativeSpeech && window.__lanaNativeSpeech($js)", null)
                 }
-                if (listening) startNativeListening()
+                if (listening) continueNativeListening()
             }
         })
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -96,6 +96,14 @@ class MainActivity : Activity() {
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
         }
         speechRecognizer?.startListening(intent)
+    }
+
+    private fun continueNativeListening() {
+        if (!listening) return
+        speechRecognizer?.destroy()
+        speechRecognizer = null
+        listening = false
+        startNativeListening()
     }
 
     private fun stopNativeListening() {
