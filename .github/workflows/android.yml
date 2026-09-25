@@ -22,3 +22,5 @@ jobs:
         with:
           name: lana-taxi-assistent-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+
+# Native shell build kept intentionally separate from Vercel web deployment.
