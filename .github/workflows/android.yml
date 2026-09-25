@@ -2,7 +2,7 @@ name: Build LANA Android
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, fix/direct-google-navigation ]
   workflow_dispatch:
 
 jobs:

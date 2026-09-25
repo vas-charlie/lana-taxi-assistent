@@ -52,16 +52,20 @@ class MainActivity : Activity() {
     }
 
     private fun launchGoogleNavigation(destination: String) {
-        val uri = Uri.parse("google.navigation:q=${Uri.encode(destination)}&mode=d")
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        val mapsUrl = "https://www.google.com/maps/dir/?api=1" +
+            "&destination=" + Uri.encode(destination) +
+            "&travelmode=driving" +
+            "&dir_action=navigate"
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)).apply {
             setPackage("com.google.android.apps.maps")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
+
         try {
             startActivity(intent)
         } catch (_: Exception) {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
-                "https://www.google.com/maps/dir/?api=1&destination=${Uri.encode(destination)}&travelmode=driving&dir_action=navigate"
-            )))
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)))
         }
     }
 
