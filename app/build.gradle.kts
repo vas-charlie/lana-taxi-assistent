@@ -13,3 +13,6 @@ android {
         versionName = "1.0.0"
     }
 }
+kotlin {
+    jvmToolchain(17)
+}
