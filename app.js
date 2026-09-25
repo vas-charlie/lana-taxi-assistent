@@ -292,7 +292,7 @@ function handleCommand(raw){
    .toLowerCase()
    .trim();
  if(!t)return showSpeech('Tu sam, Čarli. Reci što treba.',true);
- const raw=original;
+ raw=original;
  if(pendingNavigation){
    if(t.includes('odustani')||t.includes('prekini')||t.includes('ne treba')){
      pendingNavigation=false;
