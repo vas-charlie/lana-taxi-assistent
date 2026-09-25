@@ -195,16 +195,21 @@ function normalizeNavigationDestination(raw){
  }
  return out.join(' ').replace(/\s+/g,' ').trim();
 }
-function openMaps(destination){
+async function openMaps(destination){
  const clean=destination.trim();if(!clean)return;
  const q=encodeURIComponent(clean);
- // Koristimo Google Maps univerzalni URL. Android ga može izravno preuzeti
- // u Google Maps bez intent:// međuprozora s gumbom NASTAVI.
- const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';
+ // Google Maps pokreće aktivnu navigaciju samo ako može koristiti
+ // trenutnu lokaciju kao polazište. Zato joj prvo damo trenutne koordinate.
+ // Ne koristimo Android intent://, pa nema međuprozora NASTAVI.
  try{
+   const pos=await getCurrentPosition();
+   const origin=encodeURIComponent(pos.coords.latitude+','+pos.coords.longitude);
+   const web='https://www.google.com/maps/dir/?api=1&origin='+origin+'&destination='+q+'&travelmode=driving&dir_action=navigate';
    window.location.href=web;
  }catch{
-   window.open(web,'_blank');
+   // Ako lokacija nije dostupna, ostajemo na sigurnom univerzalnom URL-u.
+   const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';
+   window.location.href=web;
  }
 }
 function getCurrentPosition(){
