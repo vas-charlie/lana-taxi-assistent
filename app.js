@@ -89,7 +89,9 @@ $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition(
 function startRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showSpeech('Glasovno slušanje nije podržano na ovom pregledniku.');return}
-  if(!listening||lanaSpeaking)return;
+  if(lanaSpeaking)return;
+  if(listening&&recognition)return;
+  listening=true;
   const run=++recognitionRun;
   const rec=new SR();
   recognition=rec;
