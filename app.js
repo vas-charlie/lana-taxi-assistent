@@ -172,7 +172,14 @@ function stopRecognition(){
   if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';
   $('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';
 }
-function openMaps(destination){const clean=destination.trim();if(!clean)return;const q=encodeURIComponent(clean);const nav='google.navigation:q='+q+'&mode=d';const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';let fallback=setTimeout(()=>window.open(web,'_blank'),900);try{window.location.href=nav}catch{clearTimeout(fallback);window.open(web,'_blank')}}
+function openMaps(destination){
+ const clean=destination.trim();if(!clean)return;
+ const q=encodeURIComponent(clean);
+ const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';
+ const intent='intent://maps.google.com/maps?daddr='+q+'&directionsmode=driving#Intent;scheme=https;package=com.google.android.apps.maps;end';
+ let fallback=setTimeout(()=>window.open(web,'_blank'),1200);
+ try{window.location.href=intent}catch{clearTimeout(fallback);window.open(web,'_blank')}
+}
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
    if(!navigator.geolocation)return reject(new Error('geolocation-unavailable'));
