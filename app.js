@@ -87,9 +87,16 @@ document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()
 $('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
 window.__lanaNativeSpeech=function(text){
-  if(!text||lanaSpeaking)return;
-  showSpeech('Čula sam: '+text);
-  handleCommand(text);
+  const heard=String(text||'').trim();
+  if(!heard)return;
+  // Native Android prepoznavanje je zajednički ulaz za SVE glasovne naredbe.
+  // Ne smijemo odbaciti naredbu samo zato što je Lana upravo završila govor.
+  if(lanaSpeaking){
+    setTimeout(()=>window.__lanaNativeSpeech(heard),250);
+    return;
+  }
+  showSpeech('Čula sam: '+heard);
+  handleCommand(heard);
 };
 function startRecognition(){
   if(lanaSpeaking)return;
@@ -275,8 +282,17 @@ async function quoteRide(destination){
  }
 }
 function handleCommand(raw){
- const t=raw.toLowerCase().trim();
- if(!t)return;
+ const original=String(raw||'').trim();
+ if(!original)return;
+ // "Lana" je pozivno ime, a ne dio naredbe. Uklanjamo ga da svaka
+ // naredba prolazi kroz isti dispatcher, bez obzira na način izgovora.
+ const t=original
+   .replace(/^[,.;:!?\s]*(?:hej\s+)?lana\b[\s,.;:!?-]*/i,'')
+   .replace(/^[,.;:!?\s]+|[,.;:!?\s]+$/g,'')
+   .toLowerCase()
+   .trim();
+ if(!t)return showSpeech('Tu sam, Čarli. Reci što treba.',true);
+ const raw=original;
  if(pendingNavigation){
    if(t.includes('odustani')||t.includes('prekini')||t.includes('ne treba')){
      pendingNavigation=false;
