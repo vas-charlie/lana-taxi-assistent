@@ -198,15 +198,15 @@ function normalizeNavigationDestination(raw){
 function openMaps(destination){
  const clean=destination.trim();if(!clean)return;
  const q=encodeURIComponent(clean);
- // Za Android pokušavamo izravni Google Maps navigation URI.
- // Ako uređaj/browser blokira URI, vraćamo se na službeni Maps URL.
+ // Androidov izravni Google Maps navigation intent.
+ // Namjerno NEMA automatskog web-fallbacka: fallback bi nakon ~1.8 s
+ // preuzeo kontrolu i vratio Maps na samo prikaz rute.
  const direct='google.navigation:q='+q+'&mode=d';
- const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';
  try{
    window.location.href=direct;
-   setTimeout(()=>{try{window.location.href=web}catch{}},1800);
  }catch{
-   window.location.href=web;
+   // Ako browser odbije URI, ne preusmjeravamo automatski na drugi način
+   // jer bi to ponovno moglo prekinuti aktivnu navigaciju.
  }
 }
 function getCurrentPosition(){
