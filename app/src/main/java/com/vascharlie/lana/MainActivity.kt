@@ -2,6 +2,9 @@ package com.vascharlie.lana
 
 import android.Manifest
 import android.app.Activity
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -20,6 +23,9 @@ class MainActivity : Activity() {
     private lateinit var webView: WebView
     private var speechRecognizer: SpeechRecognizer? = null
     private var listening = false
+    private var pendingNavigation: String? = null
+    private var locationManager: LocationManager? = null
+    private var locationListener: LocationListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +58,81 @@ class MainActivity : Activity() {
     }
 
     private fun launchGoogleNavigation(destination: String) {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            pendingNavigation = destination
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                43
+            )
+            return
+        }
+
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val lm = locationManager ?: return launchGoogleMaps(destination)
+
+        val last = try {
+            listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+                .mapNotNull { provider ->
+                    if (lm.isProviderEnabled(provider)) lm.getLastKnownLocation(provider) else null
+                }
+                .maxByOrNull { it.time }
+        } catch (_: SecurityException) {
+            null
+        }
+
+        if (last != null && System.currentTimeMillis() - last.time < 15_000L) {
+            launchGoogleMaps(destination)
+            return
+        }
+
+        pendingNavigation = destination
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                stopLocationWait()
+                val target = pendingNavigation
+                pendingNavigation = null
+                if (target != null) launchGoogleMaps(target)
+            }
+        }
+        locationListener = listener
+
+        try {
+            if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, listener, mainLooper)
+            }
+            if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, listener, mainLooper)
+            }
+        } catch (_: SecurityException) {
+            stopLocationWait()
+            launchGoogleMaps(destination)
+            return
+        }
+
+        webView.postDelayed({
+            if (pendingNavigation != null) {
+                val target = pendingNavigation
+                pendingNavigation = null
+                stopLocationWait()
+                if (target != null) launchGoogleMaps(target)
+            }
+        }, 2500L)
+    }
+
+    private fun stopLocationWait() {
+        val lm = locationManager
+        val listener = locationListener
+        if (lm != null && listener != null) {
+            try { lm.removeUpdates(listener) } catch (_: SecurityException) {}
+        }
+        locationListener = null
+    }
+
+    private fun launchGoogleMaps(destination: String) {
         val mapsUrl = "https://www.google.com/maps/dir/?api=1" +
             "&destination=" + Uri.encode(destination) +
             "&travelmode=driving" +
@@ -60,6 +141,7 @@ class MainActivity : Activity() {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)).apply {
             setPackage("com.google.android.apps.maps")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra(Intent.EXTRA_REFERRER_NAME, "android-app://$packageName")
         }
 
         try {
@@ -123,7 +205,21 @@ class MainActivity : Activity() {
         @JavascriptInterface fun stopListening() = runOnUiThread { stopNativeListening() }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 43) {
+            val target = pendingNavigation
+            pendingNavigation = null
+            if (grantResults.any { it == PackageManager.PERMISSION_GRANTED } && target != null) {
+                launchGoogleNavigation(target)
+            } else if (target != null) {
+                launchGoogleMaps(target)
+            }
+        }
+    }
+
     override fun onDestroy() {
+        stopLocationWait()
         stopNativeListening()
         webView.destroy()
         super.onDestroy()
