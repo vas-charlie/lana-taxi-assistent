@@ -172,6 +172,29 @@ function stopRecognition(){
   if($('shellMicSmall'))$('shellMicSmall').textContent='isključen';
   $('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';
 }
+function normalizeNavigationDestination(raw){
+ const s=String(raw||'').replace(/[?!.]+$/,'').trim();
+ if(!s)return '';
+ const ones={nula:0,jedan:1,jedna:1,jedno:1,dva:2,dvije:2,tri:3,četiri:4,cetiri:4,pet:5,šest:6,sest:6,sedam:7,osam:8,devet:9};
+ const teens={jedanaest:11,dvanaest:12,trinaest:13,četrnaest:14,cetrnaest:14,petnaest:15,šesnaest:16,sestnaest:16,sedamnaest:17,osamnaest:18,devetnaest:19};
+ const tens={dvadeset:20,trideset:30,četrdeset:40,cetrdeset:40,pedeset:50,šezdeset:60,sezdeset:60,sedamdeset:70,osamdeset:80,devedeset:90};
+ const words=s.replace(/-/g,' ').split(/\s+/), out=[]; let i=0;
+ while(i<words.length){
+   const w=words[i].toLowerCase();
+   if(teens[w]!==undefined){out.push(String(teens[w]));i++;continue}
+   if(tens[w]!==undefined){
+     let n=tens[w];
+     if(i+1<words.length&&ones[words[i+1].toLowerCase()]!==undefined){n+=ones[words[i+1].toLowerCase()];i++}
+     out.push(String(n));i++;continue
+   }
+   if(w==='sto'||w==='stotinu'){out.push('100');i++;continue}
+   if(ones[w]!==undefined){
+     out.push(String(ones[w]));i++;continue
+   }
+   out.push(words[i]);i++;
+ }
+ return out.join(' ').replace(/\s+/g,' ').trim();
+}
 function openMaps(destination){
  const clean=destination.trim();if(!clean)return;
  const q=encodeURIComponent(clean);
@@ -237,7 +260,7 @@ function handleCommand(raw){
      return showSpeech('U redu, ne otvaram navigaciju.',true);
    }
    pendingNavigation=false;
-   const dest=raw.replace(/[?!.]+$/,'').trim();
+   const dest=normalizeNavigationDestination(raw);
    if(dest){openMaps(dest);return showSpeech('Pokrećem navigaciju prema '+dest+'.',true);}
  }
  if(t.includes('započni')||t.includes('pokreni smjenu'))return toggleShift(true);
@@ -251,7 +274,7 @@ function handleCommand(raw){
  if(t.includes('pričaj sa mnom')||t.includes('pričaj malo')||t.includes('razgovaraj sa mnom')){
    return showSpeech('Naravno, Čarli. Tu sam. Kako ide čekanje?',true);
  }
- if(t.includes('navigacij')||t.includes('otvori kartu')||t.includes('otvori google maps')){const m=raw.match(/(?:do|prema|za)\s+(.+)$/i);if(m){const dest=m[1].replace(/[?!.]+$/,'').trim();if(!dest){pendingNavigation=true;return showSpeech('Reci mi odredište.',true)}openMaps(dest);return showSpeech('Pokrećem navigaciju prema '+dest+'.',true)}pendingNavigation=true;return showSpeech('Naravno. Reci mi samo odredište.',true)}
+ if(t.includes('navigacij')||t.includes('otvori kartu')||t.includes('otvori google maps')){const m=raw.match(/(?:do|prema|za)\s+(.+)$/i);if(m){const dest=normalizeNavigationDestination(m[1]);if(!dest){pendingNavigation=true;return showSpeech('Reci mi odredište.',true)}openMaps(dest);return showSpeech('Pokrećem navigaciju prema '+dest+'.',true)}pendingNavigation=true;return showSpeech('Naravno. Reci mi samo odredište.',true)}
  if(t.includes('glazb')||t.includes('muzik')){
    if(t.includes('pauz')||t.includes('zaustav')){showMusicCommand('pause');return}
    const playMatch=raw.match(/(?:pusti|sviraj|pokreni)\s+(.+)$/i);
