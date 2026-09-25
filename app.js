@@ -176,9 +176,18 @@ function openMaps(destination){
  const clean=destination.trim();if(!clean)return;
  const q=encodeURIComponent(clean);
  const web='https://www.google.com/maps/dir/?api=1&destination='+q+'&travelmode=driving&dir_action=navigate';
- const intent='intent://maps.google.com/maps?daddr='+q+'&directionsmode=driving#Intent;scheme=https;package=com.google.android.apps.maps;end';
- let fallback=setTimeout(()=>window.open(web,'_blank'),1200);
- try{window.location.href=intent}catch{clearTimeout(fallback);window.open(web,'_blank')}
+ // Android Google Maps deep-link koji izravno traži turn-by-turn navigaciju.
+ const navIntent='intent://google.navigation:q='+q+'&mode=d#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end';
+ const direct='google.navigation:q='+q+'&mode=d';
+ let fallback1=setTimeout(()=>{try{window.location.href=direct}catch{window.open(web,'_blank')}},900);
+ let fallback2=setTimeout(()=>window.open(web,'_blank'),2200);
+ try{
+   window.location.href=navIntent;
+ }catch{
+   clearTimeout(fallback1);
+   clearTimeout(fallback2);
+   try{window.location.href=direct}catch{window.open(web,'_blank')}
+ }
 }
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
