@@ -133,21 +133,29 @@ class MainActivity : Activity() {
     }
 
     private fun launchGoogleMaps(destination: String) {
-        val mapsUrl = "https://www.google.com/maps/dir/?api=1" +
-            "&destination=" + Uri.encode(destination) +
-            "&travelmode=driving" +
-            "&dir_action=navigate"
-
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)).apply {
+        // Pravi Android Google Maps navigation intent.
+        // Ne otvaramo maps.google.com i ne šaljemo korisnika kroz pregled rute.
+        val navigationUri = Uri.parse(
+            "google.navigation:q=" + Uri.encode(destination) + "&mode=d"
+        )
+        val intent = Intent(Intent.ACTION_VIEW, navigationUri).apply {
             setPackage("com.google.android.apps.maps")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra(Intent.EXTRA_REFERRER_NAME, "android-app://$packageName")
         }
 
         try {
             startActivity(intent)
         } catch (_: Exception) {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)))
+            // Ako Google Maps nije dostupan, pokušaj standardni Android VIEW.
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, navigationUri))
+            } catch (_: Exception) {
+                // Posljednji sigurni fallback.
+                val mapsUrl = "https://www.google.com/maps/dir/?api=1" +
+                    "&destination=" + Uri.encode(destination) +
+                    "&travelmode=driving"
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(mapsUrl)))
+            }
         }
     }
 
