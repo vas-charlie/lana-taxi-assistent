@@ -213,15 +213,27 @@ function normalizeNavigationDestination(raw){
  return out.join(' ').replace(/\s+/g,' ').trim();
 }
 function openMaps(destination){
- const clean=destination.trim();if(!clean)return;
- // Native Android LANA pokreće Maps izravno, bez Chrome potvrde.
+ const clean=String(destination||'').trim();if(!clean)return;
+
+ // 1) Ako je Lana pokrenuta unutar Android omotača, koristi pravi
+ // Android ACTION_VIEW intent. Google službeno navodi google.navigation:q=
+ // kao način za izravno pokretanje turn-by-turn navigacije.
  if(typeof window.AndroidLana!=='undefined' && typeof window.AndroidLana.navigate==='function'){
-   window.AndroidLana.navigate(clean);
-   return;
+   try{window.AndroidLana.navigate(clean);return}catch{}
  }
- const q=encodeURIComponent(clean);
- const direct='google.navigation:q='+q+'&mode=d';
- try{window.location.href=direct}catch{}
+
+ // 2) PWA/Chrome fallback: ne koristimo više Maps web URL niti
+ // dir_action=navigate. Koristimo Android intent URL koji eksplicitno
+ // cilja Google Maps paket. Time preskačemo web pregled rute.
+ const encoded=encodeURIComponent(clean);
+ const intentUrl='intent://navigation/now?q='+encoded+'&mode=d#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end';
+
+ try{
+   window.location.href=intentUrl;
+ }catch{
+   // Posljednji fallback za uređaje/preglednike koji blokiraju intent://.
+   window.location.href='google.navigation:q='+encoded+'&mode=d';
+ }
 }
 function getCurrentPosition(){
  return new Promise((resolve,reject)=>{
