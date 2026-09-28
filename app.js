@@ -336,6 +336,15 @@ function handleCommand(raw){
    .trim();
  if(!t)return showSpeech('Tu sam, Čarli. Reci što treba.',true);
  raw=original;
+
+ // U razgovornom modu obična rečenica mora ići razgovornom modelu.
+ // Dispatcher naredbi ne smije presresti razgovor zbog slučajne ključne riječi.
+ if(conversationMode){
+   if(t.includes('završi razgovor')||t.includes('prekini razgovor')||t.includes('gotov razgovor')||t.includes('prestani razgovarati')){
+     return endConversation();
+   }
+   return askLanaConversation(original);
+ }
  if(pendingNavigation){
    if(t.includes('odustani')||t.includes('prekini')||t.includes('ne treba')){
      pendingNavigation=false;
@@ -373,7 +382,6 @@ function handleCommand(raw){
    if(dest){quoteRide(dest);return}
    return showSpeech('Reci mi odredište, na primjer: koliko košta odavde do Hotela Kolovare.',true);
  }
- if(conversationMode)return askLanaConversation(original);
  return speak('Razumjela sam. Reci mi što želiš napraviti, na primjer navigacija, glazba, razgovor ili izračun vožnje.');
 }
 function toggleShift(forceStart=false){shiftActive=forceStart?true:!shiftActive;$('shellShift').classList.toggle('active',shiftActive);$('shellShiftSmall').textContent=shiftActive?'aktivna':'nema smjene';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';showSpeech(shiftActive?'Smjena je započela, Čarli.':'Smjena je završena, Čarli.',true)}
