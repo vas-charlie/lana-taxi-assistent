@@ -37,6 +37,8 @@ const GREETINGS={
  luggage:'Trebate li pomoć s prtljagom? Slobodno recite.'
 };
 let brandIndex=0, recognition=null, listening=false, shiftActive=false, lanaSpeaking=false, pendingNavigation=false, recognitionRun=0;
+let conversationMode=false;
+let conversationHistory=[];
 const $=id=>document.getElementById(id);
 function showBrand(){
  const box=$('brandMessages');if(!box)return;
@@ -95,7 +97,34 @@ function speak(text,lang='hr-HR'){
 function greet(key){let t=GREETINGS[key];if(!t)return;if(Array.isArray(t))t=t[Math.floor(Math.random()*t.length)];showSpeech(t,true)}
 document.querySelectorAll('[data-greet]').forEach(b=>b.addEventListener('click',()=>greetInPassengerLanguage(b.dataset.greet)));document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setPassengerLanguage(b.dataset.lang)));$('selectedLang').onclick=()=>{$('languagePanel').hidden=false;document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===passengerLang))};$('liveTranslateBtn').onclick=toggleLiveTranslate;$('translateDirection').onclick=toggleTranslationDirection;
 document.querySelectorAll('[data-say]').forEach(b=>b.addEventListener('click',()=>showSpeech(b.dataset.say.replace(/^[^A-Za-zÀ-ž]+\s*/,'').trim(),true)));
-$('shellVoiceCore').onclick=()=>{startRecognition();setTimeout(()=>showSpeech('Bok Čarli. Lana je spremna. Reci što treba.',true),250)};
+async function askLanaConversation(userText){
+  const text=String(userText||'').trim();
+  if(!text)return;
+  conversationHistory.push({role:'user',content:text});
+  conversationHistory=conversationHistory.slice(-12);
+  try{
+    const r=await fetch('/api/conversation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversationHistory})});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.reply)throw new Error(data?.error||'conversation-failed');
+    conversationHistory.push({role:'assistant',content:data.reply});
+    conversationHistory=conversationHistory.slice(-12);
+    showSpeech(data.reply,true);
+  }catch(err){
+    showSpeech('Trenutno ne mogu otvoriti razgovor. Pokušaj ponovno.',true);
+  }
+}
+function startConversation(){
+  conversationMode=true;
+  conversationHistory=[];
+  startRecognition();
+  setTimeout(()=>showSpeech('Naravno, Čarli. Tu sam. Reci mi što ti je na pameti.',true),250);
+}
+function endConversation(){
+  conversationMode=false;
+  conversationHistory=[];
+  showSpeech('U redu, završavamo razgovor.',true);
+}
+$('shellVoiceCore').onclick=()=>startConversation();
 $('shellMic').onclick=()=>{if(listening)stopRecognition();else startRecognition()};
 window.__lanaNativeSpeech=function(text){
   const heard=String(text||'').trim();
@@ -321,8 +350,11 @@ function handleCommand(raw){
  if(t.includes('tišina')||t.includes('šuti')||t.includes('nemoj pričati')){
    speechSynthesis.cancel(); return showSpeech('U redu, šutim.');
  }
- if(t.includes('pričaj sa mnom')||t.includes('pričaj malo')||t.includes('razgovaraj sa mnom')){
-   return showSpeech('Naravno, Čarli. Tu sam. Kako ide čekanje?',true);
+ if(t.includes('završi razgovor')||t.includes('prekini razgovor')||t.includes('gotov razgovor')||t.includes('prestani razgovarati')){
+   return endConversation();
+ }
+ if(t==='razgovor'||t.includes('otvori razgovor')||t.includes('pričaj sa mnom')||t.includes('pričaj malo')||t.includes('razgovaraj sa mnom')||t.includes('možemo razgovarati')){
+   return startConversation();
  }
  if(t.includes('navigacij')||t.includes('otvori kartu')||t.includes('otvori google maps')){const m=raw.match(/(?:do|prema|za)\s+(.+)$/i);if(m){const dest=normalizeNavigationDestination(m[1]);if(!dest){pendingNavigation=true;return showSpeech('Reci mi odredište.',true)}openMaps(dest);return showSpeech('Pokrećem navigaciju prema '+dest+'.',true)}pendingNavigation=true;return showSpeech('Naravno. Reci mi samo odredište.',true)}
  if(t.includes('glazb')||t.includes('muzik')){
@@ -338,6 +370,7 @@ function handleCommand(raw){
    if(dest){quoteRide(dest);return}
    return showSpeech('Reci mi odredište, na primjer: koliko košta odavde do Hotela Kolovare.',true);
  }
+ if(conversationMode)return askLanaConversation(original);
  return speak('Razumjela sam. Reci mi što želiš napraviti, na primjer navigacija, glazba, razgovor ili izračun vožnje.');
 }
 function toggleShift(forceStart=false){shiftActive=forceStart?true:!shiftActive;$('shellShift').classList.toggle('active',shiftActive);$('shellShiftSmall').textContent=shiftActive?'aktivna':'nema smjene';$('liveStatus').textContent=shiftActive?'● smjena aktivna':'● spremna';showSpeech(shiftActive?'Smjena je započela, Čarli.':'Smjena je završena, Čarli.',true)}
