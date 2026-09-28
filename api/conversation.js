@@ -20,41 +20,54 @@ const system=[
 async function callHuggingFace(messages){
   const token=process.env.HF_TOKEN;
   if(!token)return null;
-  const upstream=await fetch('https://router.huggingface.co/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-    body:JSON.stringify({
-      model:HF_MODEL,
-      messages,
-      max_tokens:220,
-      stream:false
-    })
-  });
-  const data=await upstream.json().catch(()=>({}));
-  if(!upstream.ok){
-    console.error('Hugging Face error',upstream.status,data);
-    return null;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),12000);
+      const upstream=await fetch('https://router.huggingface.co/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:JSON.stringify({model:HF_MODEL,messages,max_tokens:220,stream:false}),
+        signal:controller.signal
+      });
+      clearTimeout(timer);
+      const data=await upstream.json().catch(()=>({}));
+      if(upstream.ok){
+        const reply=data?.choices?.[0]?.message?.content?.trim();
+        if(reply)return reply;
+      }else{
+        console.error('Hugging Face error',upstream.status,data);
+      }
+    }catch(err){
+      console.error('Hugging Face request failed',attempt+1,err?.name||err);
+    }
+    if(attempt===0)await new Promise(resolve=>setTimeout(resolve,350));
   }
-  return data?.choices?.[0]?.message?.content?.trim()||null;
+  return null;
 }
 
 async function callGateway(messages,token){
   if(!token)return null;
-  const upstream=await fetch('https://ai-gateway.vercel.sh/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-    body:JSON.stringify({
-      model:GATEWAY_MODEL,
-      messages,
-      max_tokens:220
-    })
-  });
-  const data=await upstream.json().catch(()=>({}));
-  if(!upstream.ok){
-    console.error('AI Gateway error',upstream.status,data);
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),12000);
+    const upstream=await fetch('https://ai-gateway.vercel.sh/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+      body:JSON.stringify({model:GATEWAY_MODEL,messages,max_tokens:220}),
+      signal:controller.signal
+    });
+    clearTimeout(timer);
+    const data=await upstream.json().catch(()=>({}));
+    if(!upstream.ok){
+      console.error('AI Gateway error',upstream.status,data);
+      return null;
+    }
+    return data?.choices?.[0]?.message?.content?.trim()||null;
+  }catch(err){
+    console.error('AI Gateway request failed',err?.name||err);
     return null;
   }
-  return data?.choices?.[0]?.message?.content?.trim()||null;
 }
 
 export default async function handler(req,res){
@@ -75,12 +88,10 @@ export default async function handler(req,res){
   const promptMessages=[{role:'system',content:system},...messages];
 
   try{
-    // Prefer the free Hugging Face Inference Providers path so this test app
-    // does not depend on Vercel AI Gateway billing/credit-card verification.
+    // Prefer Hugging Face. A transient provider/network failure gets a retry,
+    // then the existing Gateway path gets a chance before the request fails.
     let reply=await callHuggingFace(promptMessages);
 
-    // Keep the existing Gateway path as a fallback for environments that
-    // already have working Gateway credentials.
     if(!reply){
       const token=process.env.AI_GATEWAY_API_KEY||req.headers['x-vercel-oidc-token'];
       reply=await callGateway(promptMessages,token);
@@ -88,6 +99,7 @@ export default async function handler(req,res){
 
     if(!reply){
       const configured=Boolean(process.env.HF_TOKEN||process.env.AI_GATEWAY_API_KEY||req.headers['x-vercel-oidc-token']);
+      console.error('Conversation providers unavailable',configured?'configured':'not-configured');
       return res.status(configured?502:503).json({
         error:configured?'ai-provider-unavailable':'ai-provider-not-configured'
       });
