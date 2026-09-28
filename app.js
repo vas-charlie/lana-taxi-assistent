@@ -66,6 +66,9 @@ function prepareSpeechText(text,lang='hr-HR'){
   let s=String(text);
   const name=spokenCharlie(lang);
   s=s.replace(/Charliejeva/g,name+'eva').replace(/Charliejevu/g,name+'evu').replace(/Charliejev/g,name+'jev').replace(/Charlieju/g,name+'ju').replace(/Charliejem/g,name+'jem').replace(/Charlijeva/g,name+'eva').replace(/Charlijevu/g,name+'evu').replace(/Charlijev/g,name+'jev').replace(/Charliju/g,name+'ju').replace(/Charlijem/g,name+'jem').replace(/Charlie/gi,name);
+  s=s.split('*').join('').split('_').join('').split(String.fromCharCode(96)).join('');
+  s=s.replace(/^#{1,6}\s*/gm,'').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1');
+  s=s.replace(/\s{2,}/g,' ').trim();
   return s;
 }
 function preferredVoice(lang='hr-HR'){const vs=speechSynthesis.getVoices?.()||[];const exact=vs.find(v=>v.lang?.toLowerCase()===lang.toLowerCase()&&v.localService);return exact||vs.find(v=>v.lang?.toLowerCase().startsWith(lang.slice(0,2).toLowerCase()))||vs.find(v=>v.lang?.toLowerCase().startsWith('hr'))||null}
